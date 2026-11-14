@@ -90,7 +90,7 @@ MAINS = [re.compile(r"if\s+__name__\s*==\s*[\"']__main__[\"']"), re.compile(r"st
 PY_IMPORT = re.compile(r"^\s*(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))", re.M)
 WEB_IMPORT = re.compile(r"""(?:from|import)\s+['"](\.{1,2}/[^'"]+)['"]""")
 PROJECT_REF = re.compile(r"<ProjectReference\s+Include=\"([^\"]+)\"", re.I)
-WORD = re.compile(r"[A-Za-z_]\w+")
+WORD = re.compile(r"[A-Za-z_]\w+"); NOCOMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)  # [H]: a name in a comment is no use
 MIN_NAME = 5
 
 
@@ -185,7 +185,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
                 if hit and hit != p:
                     hard.add((p, hit))
         if fam not in ("sql", EXTRA):   # an extra source is counted, never parsed
-            for w in set(WORD.findall(text)):   # no DECL for Rust: its [K] edges come from mod / use (rust_dili)
+            for w in set(WORD.findall(NOCOMMENT.sub(" ", text) if fam in ("cs", "java", "go", "web", "c") else text)):  # no Rust DECL
                 o = owner.get((fam, w))
                 if o and o != p:
                     soft.add((p, o))
