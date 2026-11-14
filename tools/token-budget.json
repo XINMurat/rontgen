@@ -6,7 +6,7 @@
   "budgets": {
     "T0": 306,
     "T1": 4200,
-    "T2": 9500
+    "T2": 10300
   },
   "runs": {
     "full": {
@@ -33,5 +33,6 @@
       ],
       "ceiling": 4800
     }
-  }
+  },
+  "_t2_raised": "2026-11-14: 9500 -> 10300 on purpose: session-log template (belgeler.md 9) and ozel-dil.md, both new capabilities asked for by the owner."
 }

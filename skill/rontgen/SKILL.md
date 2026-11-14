@@ -84,8 +84,8 @@ list and the unclassified extensions — and correct it in
 `--config`, when the repository is not yours to write (one run left test
 files counted as source rather than write there). With no git history, churn, coupling
 and knowledge are **unmeasured**, not zero. Config, exclusions, live
-vendored code, extra sources, entry points and a language the project made
-for itself: `references/olcum.md`.
+vendored code, extra sources and entry points: `references/olcum.md`; a
+language the project made for itself: `references/ozel-dil.md`.
 
 ### 2. Read the results as questions
 
@@ -233,6 +233,7 @@ changed (`BAYAT`): those are re-read, not patched.
 ## References
 
 - `references/olcum.md` — steps 1–2: running, config, exclusions, edge tiers
+- `references/ozel-dil.md` — step 1: describing a language the project defines
 - `references/sonda.md` — step 3: the probe contract
 - `references/okuma.md` — step 4: navigation documents, order, vocabulary, anchors
 - `references/belgeler.md` — step 6: templates for every written document
