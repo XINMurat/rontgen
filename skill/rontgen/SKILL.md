@@ -111,10 +111,11 @@ Contract: `references/sonda.md` and the head of `scripts/sonda.py`.
 Open the project's own navigation documents first (`belge.md` ranks them)
 and follow the design documents they link to; then the top hotspots (five is
 usually enough) — what each is responsible for, what it should not know,
-what a change breaks elsewhere. The module note goes to the module most
-others lean on (highest `[K]` fan-in in `yapi.md`), not to whichever was
-read last: five runs that chose freely wrote up five different modules and
-their coverage swung by 2.5 points. Note the authors' own design vocabulary as
+what a change breaks elsewhere. The module note goes to the module with the
+highest `[K]` fan-in times its lines (`yapi.json` → `fan`, `modules`), not to
+whichever was read last: five runs that chose freely wrote up five different
+modules and their coverage swung by 2.5 points. Fan-in alone picked a
+logging helper on a compiler; weighted by size it picks the parser. Note the authors' own design vocabulary as
 you go. **Record every range you open** in `okunan.tsv` and every line you
 will cite in `atiflar.tsv`, as you go; neither can be rebuilt honestly
 afterwards. Order without git, change checklists, vocabulary, anchors:

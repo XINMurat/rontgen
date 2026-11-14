@@ -130,7 +130,9 @@ def main() -> int:
     rc = 0
     for f in a.files:
         schema, errs = validate_file(f, a.schema)
-        if schema is None:
+        if schema is None and errs[0].startswith("sema yok") and len(a.files) > 1 and not a.schema:
+            print(f"atlandi   {f}: {errs[0]} (bu dosya bir cikti degil)")
+        elif schema is None:
             print(f"OLCULMEDI {f}: {errs[0]}"); rc = max(rc, 2)
         elif errs:
             print(f"GECERSIZ  {f}: {len(errs)} hata"); print("\n".join("  " + e for e in errs[:20])); rc = max(rc, 1)
