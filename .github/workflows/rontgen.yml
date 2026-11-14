@@ -1,0 +1,30 @@
+name: CI
+
+# Every gate is in tools/ci.py so it runs the same way locally and here.
+# `--can-fail` proves each gate goes red when its subject is broken: a gate
+# that cannot fail is decoration. The forbidden-term list is a secret, never
+# a tracked file, so the leak gate runs only where the secret exists.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Forbidden terms (from secret)
+        env:
+          TERMS: ${{ secrets.RONTGEN_FORBIDDEN_TERMS }}
+        run: |
+          if [ -n "$TERMS" ]; then printf '%s\n' "$TERMS" > "$RUNNER_TEMP/terms"; echo "RONTGEN_FORBIDDEN_TERMS=$RUNNER_TEMP/terms" >> "$GITHUB_ENV"; fi
+      - name: All gates
+        run: python tools/ci.py
+      - name: Each gate can fail
+        run: python tools/ci.py --can-fail
