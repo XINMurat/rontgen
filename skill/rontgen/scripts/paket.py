@@ -44,6 +44,7 @@ import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from ortak import list_files  # noqa: E402
+import dil  # noqa: E402
 
 KINDS = ("normal", "dev", "build", "peer", "optional")
 NAMES = re.compile(r"(?:^|/)(Cargo\.toml|package\.json|pyproject\.toml|go\.mod|pom\.xml|build\.gradle(?:\.kts)?"
@@ -306,6 +307,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--repo", default=".")
     ap.add_argument("--out", default="rontgen-out")
+    ap.add_argument("--lang", help="rapor dili: tr-ascii (varsayilan), tr, en")
     ap.add_argument("--self-test", action="store_true")
     a = ap.parse_args()
     if a.self_test:
@@ -315,7 +317,7 @@ def main() -> int:
     with io.open(os.path.join(a.out, "paket.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(r, f, ensure_ascii=False, indent=2); f.write("\n")
     with io.open(os.path.join(a.out, "paket.md"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(render(r, os.path.basename(os.path.abspath(a.repo))))
+        f.write(dil.cevir(render(r, os.path.basename(os.path.abspath(a.repo))), a.lang or "tr-ascii"))
     print(f"yazildi: {os.path.join(a.out, 'paket.md')} — {len(r['packages'])} paket, {len(r['errors'])} okunamayan")
     return 0 if r["packages"] else 2
 

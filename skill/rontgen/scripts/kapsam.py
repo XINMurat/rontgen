@@ -62,6 +62,8 @@ import os
 import sys
 import tempfile
 
+import dil
+
 READ_SHARE = 0.6
 ORNEK_HEAD = "# Kor denetim"   # first line of atif.py --ornek
 
@@ -357,6 +359,7 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     p.add_argument("--docs", help="rontgen.json, yapi.json, okunan.tsv ve atiflar.tsv'nin dizini")
     p.add_argument("--repo", help="kaynak disi okumalar icin depo kok dizini (verilmezse rontgen.json'daki yol)")
+    p.add_argument("--lang", help="rapor dili: tr-ascii (varsayilan), tr, en")
     p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
     if a.self_test:
@@ -375,7 +378,7 @@ def main() -> int:
     with io.open(os.path.join(a.docs, "kapsam.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(k, f, ensure_ascii=False, indent=2); f.write("\n")
     with io.open(os.path.join(a.docs, "kapsam.md"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(render(k, name))
+        f.write(dil.cevir(render(k, name), a.lang or "tr-ascii"))
     print(f"yazildi: {os.path.join(a.docs, 'kapsam.md')} — pay %{round(k['share'] * 100, 1)}, siradaki: {', '.join(k['next']) or '-'}")
     return 0
 

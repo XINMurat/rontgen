@@ -65,6 +65,7 @@ from collections import Counter, defaultdict
 from itertools import combinations
 
 from ortak import excluded_lines, source_map, ext, git, has_history, is_test, load_config, read_sources, thresholds_line
+import dil  # noqa: E402
 
 COUPLING_MAX_FILES = 30
 
@@ -450,6 +451,7 @@ def main() -> int:
     p.add_argument("--out", help="rontgen.json ve rontgen.md buraya yazilir; verilmezse rapor ekrana")
     p.add_argument("--since", help="gecmisi bu tarihten itibaren oku (YYYY-AA-GG)")
     p.add_argument("--top", type=int, default=15)
+    p.add_argument("--lang", help="rapor dili: tr-ascii (varsayilan), tr, en; verilmezse config'teki report_lang")
     p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
     if a.self_test:
@@ -470,7 +472,7 @@ def main() -> int:
         with io.open(os.path.join(a.out, "rontgen.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(r, f, ensure_ascii=False, indent=2); f.write("\n")
         with io.open(os.path.join(a.out, "rontgen.md"), "w", encoding="utf-8", newline="\n") as f:
-            f.write(md)
+            f.write(dil.cevir(md, a.lang or cfg.get("report_lang", "tr-ascii")))
         print(f"yazildi: {os.path.join(a.out, 'rontgen.md')} ve rontgen.json")
     else:
         print(md)

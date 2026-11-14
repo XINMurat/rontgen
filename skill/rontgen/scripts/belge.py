@@ -49,6 +49,7 @@ import tempfile
 from collections import Counter
 
 from ortak import NOT_SOURCE, list_files, load_config, read_sources, source_map
+import dil  # noqa: E402
 
 TICK = re.compile(r"`([^`\s]+)`")
 LINK = re.compile(r"\]\(([^)\s#?]+)(?:[#?][^)]*)?\)")    # [text](path#anchor): a link to a file in the repository
@@ -208,6 +209,7 @@ def main() -> int:
     p.add_argument("--repo", default=".")
     p.add_argument("--out", help="cikti dizini (belge.md, belge.json)")
     p.add_argument("--config", help="rontgen.config.json (verilmezse depo kokunde aranir)")
+    p.add_argument("--lang", help="rapor dili: tr-ascii (varsayilan), tr, en; verilmezse config'teki report_lang")
     p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
     if a.self_test:
@@ -222,7 +224,7 @@ def main() -> int:
     with io.open(os.path.join(a.out, "belge.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(r, f, ensure_ascii=False, indent=2); f.write("\n")
     with io.open(os.path.join(a.out, "belge.md"), "w", encoding="utf-8", newline="\n") as f:
-        f.write(render(r, os.path.basename(os.path.abspath(a.repo))))
+        f.write(dil.cevir(render(r, os.path.basename(os.path.abspath(a.repo))), a.lang or cfg.get("report_lang", "tr-ascii")))
     print(f"yazildi: {os.path.join(a.out, 'belge.md')} — {len(r['docs'])} belge yol aniyor, {len(r['unnamed'])} modul anilmiyor")
     return 0
 

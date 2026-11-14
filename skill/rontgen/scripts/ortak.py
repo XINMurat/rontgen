@@ -78,7 +78,7 @@ MAX_BYTES = 2_000_000
 
 DEFAULTS = {"exclude_globs": [], "max_file_lines": 600, "max_line_length": 160, "max_commit_lines": 400,
             "module_depth": 3, "weak_edge": 2, "coverage_reports": [], "probe_results": [], "extra_sources": {},
-            "entry_points": []}
+            "entry_points": [], "report_lang": "tr-ascii"}
 INT_KEYS = ("max_file_lines", "max_line_length", "max_commit_lines", "module_depth", "weak_edge")
 EXTRA = "ek"   # family of a config-added source: counted and measured, never parsed
 
@@ -249,6 +249,8 @@ def load_config(repo: str, path):
             continue
         if key not in DEFAULTS:
             errors.append(f"bilinmeyen config anahtari: {key}")
+        elif key == "report_lang" and value not in ("tr-ascii", "tr", "en"):
+            errors.append(f"report_lang bilinmiyor: {value!r} (tr-ascii, tr, en; varsayilana dusulmez)")
         elif key in INT_KEYS and (isinstance(value, bool) or not isinstance(value, int) or value <= 0):
             errors.append(f"{key} pozitif tamsayi degil: {value!r}")
         elif key == "extra_sources":

@@ -52,6 +52,7 @@ import tempfile
 from collections import Counter, defaultdict
 
 from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
+import dil  # noqa: E402
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
 import go_dili, jvm_dili, orm_dili  # noqa: E401,E402
@@ -469,6 +470,7 @@ def main() -> int:
     p.add_argument("--out", help="yapi.md ve yapi.json buraya yazilir; verilmezse ekrana")
     p.add_argument("--edges", type=int, default=40, help="semada cizilecek en guclu bag sayisi")
     p.add_argument("--top", type=int, default=8)
+    p.add_argument("--lang", help="rapor dili: tr-ascii (varsayilan), tr, en; verilmezse config'teki report_lang")
     p.add_argument("--self-test", action="store_true")
     a = p.parse_args()
     if a.self_test:
@@ -489,7 +491,7 @@ def main() -> int:
         with io.open(os.path.join(a.out, "yapi.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(r, f, ensure_ascii=False, indent=2); f.write("\n")
         with io.open(os.path.join(a.out, "yapi.md"), "w", encoding="utf-8", newline="\n") as f:
-            f.write(md)
+            f.write(dil.cevir(md, a.lang or cfg.get("report_lang", "tr-ascii")))
         print(f"yazildi: {os.path.join(a.out, 'yapi.md')} ve yapi.json")
     else:
         print(md)

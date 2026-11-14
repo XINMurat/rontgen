@@ -75,6 +75,10 @@ python scripts/belge.py   --repo . --out rontgen-out
 python scripts/paket.py   --repo . --out rontgen-out
 ```
 
+Reports are written in plain Turkish by default; `--lang tr` restores the
+diacritics, `--lang en` writes English (or `report_lang` in the config). JSON
+outputs never change with the language.
+
 Run them first, read code second: reading first anchors you on whichever
 file you opened. Then read what was left out — the **"Olcume girmeyenler"**
 list and the unclassified extensions — and correct it in
