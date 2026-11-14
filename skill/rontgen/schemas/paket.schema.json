@@ -1,0 +1,81 @@
+{
+  "type": "object",
+  "required": [
+    "packages",
+    "errors"
+  ],
+  "properties": {
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "ecosystem",
+          "name",
+          "deps"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "ecosystem": {
+            "enum": [
+              "rust",
+              "npm",
+              "dotnet",
+              "python",
+              "go",
+              "maven",
+              "gradle"
+            ]
+          },
+          "deps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "name",
+                "kind",
+                "internal"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "internal": {
+                  "type": "boolean"
+                },
+                "kind": {
+                  "enum": [
+                    "normal",
+                    "dev",
+                    "build",
+                    "peer",
+                    "optional"
+                  ]
+                },
+                "feature": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Rontgen paket.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}

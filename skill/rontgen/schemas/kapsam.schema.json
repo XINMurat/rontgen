@@ -1,0 +1,86 @@
+{
+  "type": "object",
+  "required": [
+    "has_ranges",
+    "source_lines",
+    "read_lines",
+    "share",
+    "modules",
+    "next",
+    "second_reader"
+  ],
+  "properties": {
+    "has_ranges": {
+      "type": "boolean"
+    },
+    "source_lines": {
+      "type": "integer"
+    },
+    "read_lines": {
+      "type": "integer"
+    },
+    "share": {
+      "type": "number"
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "lines",
+          "read",
+          "state"
+        ],
+        "properties": {
+          "lines": {
+            "type": "integer"
+          },
+          "read": {
+            "type": "integer"
+          },
+          "state": {
+            "enum": [
+              "okundu",
+              "kismen",
+              "okunmadi",
+              "atifli"
+            ]
+          }
+        }
+      }
+    },
+    "next": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cited_unread": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "second_reader": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "items": {
+          "type": "integer"
+        },
+        "tuttu": {
+          "type": "integer"
+        },
+        "tutmadi": {
+          "type": "integer"
+        },
+        "cikmiyor": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "$comment": "Rontgen kapsam.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}

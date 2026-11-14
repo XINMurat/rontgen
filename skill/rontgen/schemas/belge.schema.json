@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "required": [
+    "docs",
+    "counts",
+    "broken_links",
+    "unnamed"
+  ],
+  "properties": {
+    "docs": {
+      "type": "array"
+    },
+    "counts": {
+      "type": "object"
+    },
+    "broken_links": {
+      "type": "array"
+    },
+    "unnamed": {
+      "type": "array"
+    }
+  },
+  "$comment": "Rontgen belge.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}

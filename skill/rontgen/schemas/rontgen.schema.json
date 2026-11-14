@@ -1,0 +1,114 @@
+{
+  "type": "object",
+  "required": [
+    "repo",
+    "history",
+    "thresholds",
+    "inventory",
+    "size",
+    "hotspots",
+    "files"
+  ],
+  "properties": {
+    "repo": {
+      "type": "string"
+    },
+    "since": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "history": {
+      "type": "boolean"
+    },
+    "thresholds": {
+      "type": "object"
+    },
+    "inventory": {
+      "type": "object"
+    },
+    "size": {
+      "type": "object"
+    },
+    "excluded": {
+      "type": "object"
+    },
+    "unclassified_extensions": {
+      "type": "object"
+    },
+    "hotspots": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "lines"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "integer"
+          },
+          "commits": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "coupling": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "knowledge": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "change_shape": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "tests": {
+      "type": "object"
+    },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "lines",
+          "test"
+        ],
+        "properties": {
+          "lines": {
+            "type": "integer"
+          },
+          "test": {
+            "type": "boolean"
+          },
+          "commits": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Rontgen rontgen.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}

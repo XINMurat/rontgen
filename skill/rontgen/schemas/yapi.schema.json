@@ -1,0 +1,97 @@
+{
+  "type": "object",
+  "required": [
+    "repo",
+    "depth",
+    "modules",
+    "edges",
+    "edge_counts",
+    "cycles",
+    "blind_spots",
+    "entry",
+    "stores"
+  ],
+  "properties": {
+    "repo": {
+      "type": "string"
+    },
+    "depth": {
+      "type": "integer"
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "files",
+          "lines"
+        ],
+        "properties": {
+          "files": {
+            "type": "integer"
+          },
+          "lines": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "files",
+          "tier"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "files": {
+            "type": "integer"
+          },
+          "tier": {
+            "enum": [
+              "K",
+              "H"
+            ]
+          },
+          "weak": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "edge_counts": {
+      "type": "object"
+    },
+    "cycles": {
+      "type": "array"
+    },
+    "cycle_candidates": {
+      "type": "array"
+    },
+    "blind_spots": {
+      "type": "object"
+    },
+    "probes": {
+      "type": "array"
+    },
+    "entry": {
+      "type": "object"
+    },
+    "stores": {
+      "type": "object"
+    },
+    "outline": {
+      "type": "object"
+    }
+  },
+  "$comment": "Rontgen yapi.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}

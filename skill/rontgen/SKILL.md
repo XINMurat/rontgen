@@ -45,6 +45,8 @@ reading was actually done.
 | `paket.py` | `paket.md` / `.json` | package manifests (Cargo, npm, .NET, Python, Go, Maven, Gradle): internal, external, feature-gated, test-only |
 | `atif.py` | check / `--capala` / `--ornek` | whether every citation still points at what was read; a blind checklist for a second reader |
 | `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read |
+| `devir.py` | backlog / registry | hand-off to iskele (tasks with acceptance criteria, `review` baseline) and mizan (unheld sentences) |
+| `dogrula.py` | check | every JSON output against its frozen schema in `schemas/` |
 
 `ortak.py` and `sonda.py` hold what they share. Each script has a
 `--self-test`. Thresholds and exclusions come from `rontgen.config.json`
@@ -166,7 +168,18 @@ and the documents, not from the conversation.
 
 ### 7. Hand off
 
-Rontgen finds; it does not fix and it does not adjudicate.
+Rontgen finds; it does not fix and it does not adjudicate. Write the
+hand-off from the files, not by re-wording them:
+
+```bash
+python scripts/devir.py --docs rontgen-out --iskele rontgen-out/devir-iskele.md --mizan rontgen-out/devir-mizan.yaml
+python scripts/dogrula.py rontgen-out/*.json
+```
+
+Both formats pass the siblings' own parsers (iskele's backlog reader,
+mizan's validator in strict mode). Mizan entries are recorded as post-hoc:
+each sentence was written from its line, so re-reading it is an audit, not
+a prediction.
 
 - **→ iskele**: each finding worth acting on becomes a backlog task with an
   executable acceptance criterion; the thresholds become the `review` budget

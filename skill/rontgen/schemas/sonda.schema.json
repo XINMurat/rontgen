@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "required": [
+    "sonda",
+    "commit",
+    "tier",
+    "oz_test",
+    "edges"
+  ],
+  "properties": {
+    "sonda": {
+      "type": "string"
+    },
+    "commit": {
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "K",
+        "H"
+      ]
+    },
+    "oz_test": {
+      "type": "string"
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Rontgen sonda.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."
+}
