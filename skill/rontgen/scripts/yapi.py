@@ -39,7 +39,6 @@ USAGE
     python yapi.py --repo . --out rontgen-out
     python yapi.py --repo . --config rontgen.config.json --edges 40
     python yapi.py --self-test
-
 Exit codes: 0 extracted · 2 could not (not a git repository, no source, bad config or probe result)
 """
 from __future__ import annotations
@@ -57,7 +56,7 @@ from collections import Counter, defaultdict
 from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
-import go_dili  # noqa: E402
+import go_dili, jvm_dili  # noqa: E401,E402
 import rust_dili
 
 DECL = {
@@ -223,7 +222,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         return out
 
     lang = {}                                   # Rust mod/use, Go import: resolved through the manifest, never by name
-    for fam, mod, manifest in (("rs", rust_dili, "**/Cargo.toml"), ("go", go_dili, "**/go.mod")):
+    for fam, mod, manifest in (("rs", rust_dili, "**/Cargo.toml"), ("go", go_dili, "**/go.mod"), ("java", jvm_dili, "**/pom.xml")):
         lf = {p: t for p, (f, t) in files.items() if f == fam}
         if lf:
             e, cnt, roots = mod.edges(lf, known, read_all(manifest)); hard |= e
@@ -294,7 +293,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         "edge_counts": {"K": len(mod_hard), "H": len(strong_soft), "H_weak": len(mod_soft) - len(strong_soft)},
         "cycles": cyc_k, "cycle_candidates": cyc_h,
         "blind_spots": kor_noktalar({p: t for p, (f, t) in files.items() if f not in ("sql", EXTRA) and not is_test(p)}),
-        "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"),
+        "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"), "java": lang.get("java"),
         "most_used_files": [{"path": p, "used_by": n} for p, n in file_in.most_common(top)],
         "entry": {"mains": sorted(mains), "functions": entry_fns, "missing": sorted(set(wanted) - found - {"main"}),
                   "route_count": sum(len(v) for v in routes.values()),
@@ -368,7 +367,8 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
               for p in r["probes"]] + [""]
 
     o += c_dili.render(r["c"]) if r["c"] else []
-    for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)")):
+    for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)"),
+                              ("java", "Java/Kotlin `import`", "kaynak kokleri")):
         rn = r.get(key)
         o += ([f"## {title} baglari", "", f"{rn['files']} dosya, {roots}: {', '.join(rn['crates']) or 'bildirim bulunamadi'}. "
               f"`[K]` cozulen: {rn['uses']['K']} (dosya bagi {rn['file_edges']}); depo disi (dis, bag yok): {rn['uses']['dis']}; "
