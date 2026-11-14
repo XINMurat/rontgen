@@ -125,3 +125,13 @@ Evidence so far, and its limits:
   through go.mod gave 193. With module choice by fan-in alone the run wrote up
   a logging helper and covered 2 of 14 points (the arm without the skill 3);
   weighted by lines it chose the parser and covered 7.
+- **Three runs on the Go repository with the corrected choice**: coverage 7,
+  8.5 and 5.5 of 14 (two runs without the skill: 3 and 1); blind accuracy 16,
+  20 and 20 of 20 against 19, 19 and 19 for the arm without the skill. The
+  two runs after the signature and measured-number rules held 20 of 20.
+- **Name edges in a one-namespace C# repository**: of 20 sampled cross-module
+  `[H]` uses, 19 were real type uses and 1 sat in a doc comment; comments are
+  no longer scanned. **ORM tables** in the same repository: 0 before, 30 once
+  EF Core `DbSet` declarations were read. **The first real probe** (DI
+  registrations) found its gap empty there: all 11 interfaces lived in the
+  same file as their implementations.

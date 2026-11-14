@@ -243,6 +243,6 @@ imports are exercised by self-tests only. On a large Rust repository three
 runs of 0.6 covered 11.5 of 14 reference points on average (0.5: 9.1; the
 arm without the skill 4.5 to 6), held 19, 19 and 18 of 20 in a blind check
 (that arm 19 to 20), and a reader holding only the documents answered 4.7 of
-8. On a Go repository one run covered 7 of 14 against 3 for the arm without
-the skill, and held 16 of 20 against 19: wider, less accurate, one sample.
+8. On a Go repository three runs covered 7 of 14 on average against 2 for the
+arm without the skill, and held 18.7 of 20 against 19.
 The second reader before delivery remains the one step that raised accuracy.
