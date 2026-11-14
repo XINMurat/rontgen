@@ -23,10 +23,8 @@ WHAT IT EXTRACTS
                follow (DI, reflection, ORM, built-up SQL ...): the list a
                probe is written from, produced before anyone reads the code
   entry points routes and mains recognised by pattern [H]
-  stores       tables declared in SQL; per table the files that WRITE it
-               (INSERT / UPDATE / DELETE), READ it (FROM / JOIN) or merely
-               carry its name in quotes. A table name as a bare word in prose
-               or as a column header is not a mention.
+  stores       tables declared in SQL or an ORM (orm_dili.py); files that WRITE (INSERT/UPDATE/DELETE),
+               READ (FROM/JOIN; ORM access, [H]) or quote each. A bare word in prose is no mention.
   outline      declarations and routes of the largest files, with line
                numbers; C# methods and C/C++ functions and types are
                matched by pattern [H]
@@ -56,7 +54,7 @@ from collections import Counter, defaultdict
 from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
-import go_dili, jvm_dili  # noqa: E401,E402
+import go_dili, jvm_dili, orm_dili  # noqa: E401,E402
 import rust_dili
 
 DECL = {
@@ -170,7 +168,9 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
                 name = re.sub(r"[\[\]\"]", "", raw).split(".")[-1]
                 if name not in tables or (is_test(tables[name]) and not is_test(p)):
                     tables[name] = p          # a fixture copy of the schema does not own the table
+    orm = {t: v for t, v in orm_dili.tables(files).items() if t not in tables}; tables.update({t: v[0] for t, v in orm.items()})
     use = {t: {"write": set(), "read": set(), "quoted": set()} for t in tables}
+    for t, us in orm_dili.uses(files, orm).items(): use[t]["read"] |= us
 
     hard, soft, routes, mains, outlines = set(), set(), defaultdict(list), [], {}
     for p, (fam, text) in files.items():
@@ -390,7 +390,7 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
         table(["Yol oneki", "Uc"], list(e["routes_by_prefix"].items()))
     s = r["stores"]
     o += ["## Veri depolari `[H]`", "",
-          f"SQL'de tanimli {s['tables']} tablo. **Yazan**: INSERT / UPDATE / DELETE ifadesinde; **okuyan**: FROM / JOIN ifadesinde;",
+          f"SQL ya da ORM'de tanimli {s['tables']} tablo. **Yazan**: INSERT / UPDATE / DELETE ifadesinde; **okuyan**: FROM / JOIN ifadesinde;",
           "**tirnakli**: yalniz tirnak icinde adi gecen (ad kodla kurulan sorguya veriliyor olabilir). Adi duz yazida ya da sutun",
           "basligi olarak gecen dosya sayilmaz. Sorgu metni parcalardan kuruluyorsa eksik sayar.", ""]
     table(["Tablo", "Tanim", "Yazan", "Okuyan", "Tirnakli"],
