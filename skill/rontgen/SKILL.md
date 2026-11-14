@@ -42,6 +42,7 @@ reading was actually done.
 | `rontgen.py` | `rontgen.md` / `.json` | inventory, size, hotspots, knowledge spread, files that change together, commit shape, test coverage |
 | `yapi.py` | `yapi.md` / `.json` | block diagram, dependencies, cycles, **blind spots**, entry surface, stores, outline of large files |
 | `belge.py` | `belge.md` / `.json` | code paths the project's documents name: which exist, which document names most, which modules none names |
+| `paket.py` | `paket.md` / `.json` | package manifests (Cargo, npm, .NET, Python, Go, Maven, Gradle): internal, external, feature-gated, test-only |
 | `atif.py` | check / `--capala` / `--ornek` | whether every citation still points at what was read; a blind checklist for a second reader |
 | `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read |
 
@@ -66,6 +67,7 @@ the step, not before.
 python scripts/rontgen.py --repo . --out rontgen-out
 python scripts/yapi.py    --repo . --out rontgen-out
 python scripts/belge.py   --repo . --out rontgen-out
+python scripts/paket.py   --repo . --out rontgen-out
 ```
 
 Run them first, read code second: reading first anchors you on whichever
@@ -86,6 +88,7 @@ vendored code, extra sources and entry points: `references/olcum.md`.
 | Hotspots | Which files are both expensive to read and constantly changed? |
 | Coupling | Which files are tied by habit rather than by an import? |
 | Entry surface, stores | Where does the outside come in, and where does state live? |
+| Package manifests | What may each layer depend on, and what is switched on only by a feature or a test? |
 | Knowledge, change shape | Who could explain this, and was the history ever reviewable? |
 
 Solid arrows are `[K]` (a dependency that resolves in the repository),
@@ -105,7 +108,10 @@ Contract: `references/sonda.md` and the head of `scripts/sonda.py`.
 Open the project's own navigation documents first (`belge.md` ranks them)
 and follow the design documents they link to; then the top hotspots (five is
 usually enough) — what each is responsible for, what it should not know,
-what a change breaks elsewhere. Note the authors' own design vocabulary as
+what a change breaks elsewhere. The module note goes to the module most
+others lean on (highest `[K]` fan-in in `yapi.md`), not to whichever was
+read last: five runs that chose freely wrote up five different modules and
+their coverage swung by 2.5 points. Note the authors' own design vocabulary as
 you go. **Record every range you open** in `okunan.tsv` and every line you
 will cite in `atiflar.tsv`, as you go; neither can be rebuilt honestly
 afterwards. Order without git, change checklists, vocabulary, anchors:

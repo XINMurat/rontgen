@@ -98,7 +98,10 @@ One per module in the block diagram; half a page.
   (yapi.json → most_used_files), each with `file:line`.
 **State it owns** — tables, files, caches; who else touches them.
 **Core types** — the three to six types the rest of the module is built from:
-  what each holds (fields that matter, `file:line`), and which one owns which.
+  what each holds (fields that matter, `file:line`), which one owns which, and
+  **how a value is made and changed**: the constructor or builder the rest of
+  the code calls (search for its callers; the most called one is the main
+  interface), and whether a change edits in place or returns a new value.
 **What surprised the reader** — one or two things a newcomer would get wrong.
 **Not read** — files in the module that were not opened.
 ```
@@ -185,7 +188,11 @@ each short:
 **a. Map.** The block diagram from `yapi.md`, cut to the eight to twelve
 parts a newcomer needs, one sentence of role per box. Edges come from the
 measurement (`[K]` or `[H]` as there); a role read from code cites a line,
-a role guessed from a name carries `[H]`.
+a role guessed from a name carries `[H]`. Under the map, from `paket.md`:
+each layer's **feature-gated** external dependencies and its **test-only**
+internal ones, citing the manifest line. Five runs missed that a layer meant
+to stay independent of the terminal was tied to it; the tie was an optional
+dependency behind a feature, visible only in the manifest.
 
 **b. Who owns what.** The handful of core types and the state each holds,
 as a table and a `classDiagram`:
