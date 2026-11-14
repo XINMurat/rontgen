@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 # plan/ ozeldir: yasak terimler ve yerel yollar icerir, depoya girmez
 /plan/
+.forbidden-terms
