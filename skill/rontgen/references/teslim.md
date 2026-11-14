@@ -32,3 +32,15 @@ faulted was a table cell — a role, a list of variants, an abbreviation —
 whose cited line held only part of it. Cite the field or the range that
 shows the whole cell, or leave the extra words out. `--ornek` now gives
 table rows at least a third of the checklist when the documents have them.
+
+**A signature supports a name, not a behaviour.** Across four blind checks
+on two repositories, the skill's most frequent miss was a function's or a
+type's declaration line cited for what it does ("`Run` turns arguments into
+options", "`rebuildImpl`: scan, compile, write"). The declaration shows the
+name and the parameters; what the function does is in its body. Cite the
+range of the lines that do it, or say only that it is declared there.
+
+**A measured number names its report.** The second most frequent miss was a
+count (lines, commits, file pairs, "the largest hotspot") written next to a
+code citation, as if the line showed it. Write the number with its source
+(`rontgen.md`, `yapi.md`) and keep the code citation for what the code says.

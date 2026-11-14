@@ -139,7 +139,9 @@ flow is drawn by opening the entry point and following the calls. Which flows
 to draw is the owner's call; if the owner cannot be asked, say in each flow
 that they did not choose it. **One claim, one anchor:** a cited line supports
 only what is on it; a sentence that says more cites each part or carries
-`[H]` (forms that fail most often: `references/teslim.md`).
+`[H]` (forms that fail most often: `references/teslim.md`). Two of them
+recur: a signature cited for what the function does (cite the body range),
+and a measured number leaning on a code line (name its report instead).
 
 Before delivery, in this order:
 
