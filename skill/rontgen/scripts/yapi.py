@@ -9,9 +9,9 @@ WHAT IT EXTRACTS
   modules      a module is a directory of source files (depth from config)
   edges [K]    declared dependencies that resolve inside the repository:
                Python `import`, relative `import ... from` in TS/JS,
-               `<ProjectReference>` between C# projects, C/C++ `#include`
-               that resolves to exactly one file (see c_dili.py), and the edges of
-               any probe result that earned [K] (see sonda.py)
+               `<ProjectReference>` between C# projects, C/C++ `#include` that resolves
+               to one file (c_dili.py), Rust mod/use and Go import through the manifest
+               (rust_dili.py, go_dili.py), and any probe result that earned [K] (sonda.py)
   edges [H]    a name declared in exactly ONE file and used in another file
                of the same language family. A proxy: a common word used as a
                type name gives a false edge; reflection and DI give none.
@@ -31,10 +31,8 @@ WHAT IT EXTRACTS
                numbers; C# methods and C/C++ functions and types are
                matched by pattern [H]
 
-The first version drew [K] and [H] together, found cycles through edges
-resting on three file pairs, counted bundled build output as source, and
-counted the word "Gorev" in a spreadsheet script as a use of the table Gorev.
-Each of those is why a line above exists.
+The first version drew [K] and [H] together, found cycles through edges on three file pairs, counted
+bundled build output as source and a word in a spreadsheet script as a table use: hence the lines above.
 
 USAGE
 -----
@@ -59,6 +57,7 @@ from collections import Counter, defaultdict
 from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
+import go_dili  # noqa: E402
 import rust_dili
 
 DECL = {
@@ -223,11 +222,12 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
                 pass
         return out
 
-    rs_files, rs_note = {p: t for p, (fam, t) in files.items() if fam == "rs"}, None
-    if rs_files:
-        rs_edges, rs_counts, rs_crates = rust_dili.edges(rs_files, known, read_all("**/Cargo.toml"))
-        hard |= rs_edges
-        rs_note = {"files": len(rs_files), "crates": rs_crates, "uses": rs_counts, "file_edges": len(rs_edges)}
+    lang = {}                                   # Rust mod/use, Go import: resolved through the manifest, never by name
+    for fam, mod, manifest in (("rs", rust_dili, "**/Cargo.toml"), ("go", go_dili, "**/go.mod")):
+        lf = {p: t for p, (f, t) in files.items() if f == fam}
+        if lf:
+            e, cnt, roots = mod.edges(lf, known, read_all(manifest)); hard |= e
+            lang[fam] = {"files": len(lf), "crates": roots, "uses": cnt, "file_edges": len(e)}
     c_files, c_note = {p: t for p, (fam, t) in files.items() if fam == "c"}, None
     if c_files:
         roots, skipped = c_dili.include_roots(known, read_all("**/CMakeLists.txt"))
@@ -294,7 +294,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         "edge_counts": {"K": len(mod_hard), "H": len(strong_soft), "H_weak": len(mod_soft) - len(strong_soft)},
         "cycles": cyc_k, "cycle_candidates": cyc_h,
         "blind_spots": kor_noktalar({p: t for p, (f, t) in files.items() if f not in ("sql", EXTRA) and not is_test(p)}),
-        "probes": probe_notes, "c": c_note, "rust": rs_note,
+        "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"),
         "most_used_files": [{"path": p, "used_by": n} for p, n in file_in.most_common(top)],
         "entry": {"mains": sorted(mains), "functions": entry_fns, "missing": sorted(set(wanted) - found - {"main"}),
                   "route_count": sum(len(v) for v in routes.values()),
@@ -368,12 +368,13 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
               for p in r["probes"]] + [""]
 
     o += c_dili.render(r["c"]) if r["c"] else []
-    rn = r["rust"]
-    o += ([f"## Rust `mod` / `use` baglari", "", f"{rn['files']} Rust dosyasi, crate'ler: {', '.join(rn['crates']) or 'Cargo.toml bulunamadi'}. "
-          f"`[K]` cozulen: {rn['uses']['K']} (dosya bagi {rn['file_edges']}); depo disi crate (dis, bag yok): {rn['uses']['dis']}; "
-          f"**cozulemeyen** (kor nokta): {rn['uses']['cozulemeyen']}. Rust ad vekili `[H]` yorumu, metni ve `::` / `.` sonrasini saymaz."]
-          + ([f"Cozulemeyen ornekleri: " + "; ".join(f"`{x}`" for x in rn["uses"]["ornek"])] if rn["uses"].get("ornek") else []) + [""]
-          if rn else [])
+    for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)")):
+        rn = r.get(key)
+        o += ([f"## {title} baglari", "", f"{rn['files']} dosya, {roots}: {', '.join(rn['crates']) or 'bildirim bulunamadi'}. "
+              f"`[K]` cozulen: {rn['uses']['K']} (dosya bagi {rn['file_edges']}); depo disi (dis, bag yok): {rn['uses']['dis']}; "
+              f"**cozulemeyen** (kor nokta): {rn['uses']['cozulemeyen']}."]
+              + ([f"Cozulemeyen ornekleri: " + "; ".join(f"`{x}`" for x in rn["uses"]["ornek"])] if rn["uses"].get("ornek") else []) + [""]
+              if rn else [])
     o += ["## En cok yaslanilan dosyalar `[H]`", ""]
     table(["Dosya", "Yaslanan dosya"], [(x["path"], x["used_by"]) for x in r["most_used_files"]] or [("-", "-")])
     e = r["entry"]
