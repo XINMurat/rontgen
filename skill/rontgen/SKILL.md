@@ -231,22 +231,14 @@ changed (`BAYAT`): those are re-read, not patched.
 
 ## Status
 
-Draft 0.6. Not yet a member of the family: no git repository, no bilingual
-docs, no package, no CI, no token budget, no schema, no eval.
+Draft 0.6. Local git only: no published repository, no bilingual docs, no CI.
 
 Measured so far (details in `references/kanit.md`): the core has run on
-repositories in C#, TypeScript, SQL, Python, C and Rust; the reading half
-has been done five times, then in two with-and-without comparisons.
-Against arms without the skill, on one small and one large repository, the
-skill's documents were not wider in coverage; the second reader before
-delivery is the only step that raised accuracy, twice. A reader holding only
-the documents answered more questions from the skill's documents (4.5 of 8)
-than from the others (3 and 2). This version (architecture page, second-reader
-gate, shorter loop) was run once on the large repository: it ran its own
-second reader, covered 10 of 14 reference points (was 5.5), and a reader with
-the documents only answered 5.5 of 8; a blind reader held 17 of 20 against
-20 for the arm without the skill — its misses were table cells saying more
-than their line. With each cell citing its own field, a third run held 19 of 20
-(the other arm 19). Over five runs in all: accuracy 18 of 20 on average
-(19 after that fix), coverage 9.1 of 14, documents-only reader 4.8 of 8;
-one run swings by about 1.5.
+repositories in C#, TypeScript, SQL, Python, C, Rust and Go; Java and Kotlin
+imports are exercised by self-tests only. On a large Rust repository three
+runs of 0.6 covered 11.5 of 14 reference points on average (0.5: 9.1; the
+arm without the skill 4.5 to 6), held 19, 19 and 18 of 20 in a blind check
+(that arm 19 to 20), and a reader holding only the documents answered 4.7 of
+8. On a Go repository one run covered 7 of 14 against 3 for the arm without
+the skill, and held 16 of 20 against 19: wider, less accurate, one sample.
+The second reader before delivery remains the one step that raised accuracy.

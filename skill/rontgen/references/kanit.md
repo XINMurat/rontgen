@@ -115,3 +115,13 @@ Evidence so far, and its limits:
   8.5, 7.5, 10 of 14; documents-only reader 5.5, 5, 4.5, 4, 5 of 8. The dip
   after the third run was noise: the fifth went back to 10. One run is worth
   about plus or minus 1.5 on coverage; judge a change on several runs.
+- **0.6 (manifests, how-a-value-is-made, module choice by fan-in × lines)**,
+  three runs on the large repository: coverage 11.5, 12.5, 10.5 of 14 (0.5:
+  9.1); the terminal tie, visible only in a manifest feature, found in two of
+  three; the main edit interface named in all three. Blind accuracy 19, 19,
+  18 of 20 (the arm without the skill 19, 19, 20).
+- **A second language** (a Go bundler, ~139k lines): the core first drew 2
+  resolved edges, because Go imports name a package by module path; resolving
+  through go.mod gave 193. With module choice by fan-in alone the run wrote up
+  a logging helper and covered 2 of 14 points (the arm without the skill 3);
+  weighted by lines it chose the parser and covered 7.
