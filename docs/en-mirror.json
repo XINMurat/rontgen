@@ -1,0 +1,53 @@
+{
+  "_comment": "Pages mirrored from the skill package by tools/sync_en_docs.py. The skill files are the source of truth.",
+  "pages": [
+    {
+      "out": "methodology.md",
+      "title": "Methodology — the loop",
+      "tr": "docs/tr/metodoloji.md",
+      "sources": [
+        "skill/rontgen/SKILL.md"
+      ]
+    },
+    {
+      "out": "measuring.md",
+      "title": "Steps 1–2 — measuring",
+      "tr": "docs/tr/olcum.md",
+      "sources": [
+        "skill/rontgen/references/olcum.md"
+      ]
+    },
+    {
+      "out": "reading.md",
+      "title": "Step 4 — reading",
+      "tr": "docs/tr/okuma.md",
+      "sources": [
+        "skill/rontgen/references/okuma.md"
+      ]
+    },
+    {
+      "out": "documents.md",
+      "title": "Step 6 — the document set",
+      "tr": "docs/tr/belgeler.md",
+      "sources": [
+        "skill/rontgen/references/belgeler.md"
+      ]
+    },
+    {
+      "out": "delivery.md",
+      "title": "Step 6 — citations and delivery",
+      "tr": "docs/tr/teslim.md",
+      "sources": [
+        "skill/rontgen/references/teslim.md"
+      ]
+    },
+    {
+      "out": "evidence.md",
+      "title": "Evidence behind the rules",
+      "tr": "docs/tr/kanit.md",
+      "sources": [
+        "skill/rontgen/references/kanit.md"
+      ]
+    }
+  ]
+}
