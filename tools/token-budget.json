@@ -1,0 +1,37 @@
+{
+  "_note": "Ceilings are PREREGISTERED (2026-11-14, before the next change), not fitted. Raising one is a deliberate commit with a reason.",
+  "_runs_note": "A run is SKILL.md plus the references its procedure sends the reader to for that path.",
+  "skill_root": "skill/rontgen",
+  "chars_per_token": 3.6,
+  "budgets": {
+    "T0": 306,
+    "T1": 4200,
+    "T2": 9500
+  },
+  "runs": {
+    "full": {
+      "files": [
+        "skill/rontgen/SKILL.md",
+        "skill/rontgen/references/olcum.md",
+        "skill/rontgen/references/okuma.md",
+        "skill/rontgen/references/belgeler.md",
+        "skill/rontgen/references/teslim.md"
+      ],
+      "ceiling": 10500
+    },
+    "measure_only": {
+      "files": [
+        "skill/rontgen/SKILL.md",
+        "skill/rontgen/references/olcum.md"
+      ],
+      "ceiling": 5100
+    },
+    "probe": {
+      "files": [
+        "skill/rontgen/SKILL.md",
+        "skill/rontgen/references/sonda.md"
+      ],
+      "ceiling": 4800
+    }
+  }
+}
