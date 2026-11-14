@@ -47,6 +47,7 @@ reading was actually done.
 | `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read |
 | `devir.py` | backlog / registry | hand-off to iskele (tasks with acceptance criteria, `review` baseline) and mizan (unheld sentences) |
 | `dogrula.py` | check | every JSON output against its frozen schema in `schemas/` |
+| `cikti.py` | svg / png / docx / tex / pdf | optional formats; `--yokla` says which this machine can make |
 
 `ortak.py` and `sonda.py` hold what they share. Each script has a
 `--self-test`. Thresholds and exclusions come from `rontgen.config.json`
@@ -159,6 +160,12 @@ list is missing or unfilled; if no such reader can be started, say so there
 and to the user. This is the one step that has made the documents measurably
 more accurate, twice; when it was only offered as a checklist, it was
 skipped.
+
+**Formats.** Markdown is always the delivery. Then run
+`python scripts/cikti.py --yokla`, show the user which of SVG, PNG, Word,
+PDF and LaTeX this machine can make (and what is missing for the rest), and
+ask one question; with no answer, deliver Markdown only. A diagram that
+cannot be drawn stays as source text with a note, never silently dropped.
 
 Deliver `kapsam.md`, `rontgen.md` and `yapi.md` with the documents: a reader
 without the code answered questions from the generated outline that no
