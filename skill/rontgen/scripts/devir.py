@@ -128,7 +128,8 @@ def mizan_registry(docs, project, today=None):
     for i, r in enumerate(picked, 1):
         cites = [f"{a}:{b}" + (f"-{c}" if c else "") for a, b, c in CITE.findall(r["text"])] or ["(atif yok)"]
         o += [f'  - id: "H-{i:03d}"', "    version: 1", '    tier: "H"', '    status: "open"', "    preregistered: false", f'    recorded: "{today}"',
-              f'    review_by: "{review_by}"', '    data_status: "exists_seen"', '    note: "post-hoc: cumle satiri okuyarak yazildi; yeniden okuma bir denetimdir, tahmin degil."',
+              f'    review_by: "{review_by}"', '    data_status: "exists_seen"',
+              '    note: "post-hoc: cumle satiri okuyarak yazildi; yeniden okuma bir denetimdir, tahmin degil."',
               f"    title: {q('Belge cumlesi: ' + (r['doc'] or 'kor liste') + ' — ' + r['text'][:80])}",
               f"    formal: {q(r['text'][:600])}", f"    origin: {q('rontgen ikinci okuyucu: ' + (r['v'] or 'sonuc yok'))}",
               "    metric:", '      name: "satir_destegi"', f"      instrument: {q('atif yapilan satir(lar): ' + ', '.join(cites))}",
