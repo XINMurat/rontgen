@@ -84,7 +84,8 @@ list and the unclassified extensions — and correct it in
 `--config`, when the repository is not yours to write (one run left test
 files counted as source rather than write there). With no git history, churn, coupling
 and knowledge are **unmeasured**, not zero. Config, exclusions, live
-vendored code, extra sources and entry points: `references/olcum.md`.
+vendored code, extra sources, entry points and a language the project made
+for itself: `references/olcum.md`.
 
 ### 2. Read the results as questions
 
@@ -176,7 +177,8 @@ PDF and LaTeX this machine can make (and what is missing for the rest), and
 ask one question; with no answer, deliver Markdown only. A diagram that
 cannot be drawn stays as source text with a note, never silently dropped.
 
-Deliver `kapsam.md`, `rontgen.md` and `yapi.md` with the documents: a reader
+Deliver `kapsam.md`, `rontgen.md`, `yapi.md` and the session log
+(`oturum-gunlugu.md`, template in `references/belgeler.md`) with the documents: a reader
 without the code answered questions from the generated outline that no
 written page held. A large repository is read in slices, one module per
 sitting, the ledger naming the next; a new session starts from the ledger

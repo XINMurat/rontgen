@@ -77,7 +77,8 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
 
     o += c_dili.render(r["c"]) if r["c"] else []
     for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)"),
-                              ("java", "Java/Kotlin `import`", "kaynak kokleri")):
+                              ("java", "Java/Kotlin `import`", "kaynak kokleri"),
+                              ("ozel", "Projeye ozgu dil (config) `import`", "diller")):
         rn = r.get(key)
         o += ([f"## {title} baglari", "", f"{rn['files']} dosya, {roots}: {', '.join(rn['crates']) or 'bildirim bulunamadi'}. "
               f"`[K]` cozulen: {rn['uses']['K']} (dosya bagi {rn['file_edges']}); depo disi (dis, bag yok): {rn['uses']['dis']}; "

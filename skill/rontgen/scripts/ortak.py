@@ -51,6 +51,8 @@ import json
 import os
 import re
 import subprocess
+
+import ozel_dil  # noqa: E402
 from collections import Counter, defaultdict
 
 SOURCE = {
@@ -256,14 +258,16 @@ def load_config(repo: str, path):
         elif key == "extra_sources":
             bad = ([] if isinstance(value, dict) else ["nesne degil"]) or \
                   [f"{k!r}" for k, v in value.items() if not (isinstance(k, str) and re.fullmatch(r"\.[A-Za-z0-9_]+", k)
-                                                               and isinstance(v, str) and v.strip())]
+                                                               and (isinstance(v, str) and v.strip() or isinstance(v, dict)))]
+            bad += [f"{k!r}: {e}" for k, v in (value.items() if not bad else []) if isinstance(v, dict) for e in ozel_dil.validate(v)]
             known = [k for k in value if k.lower() in SOURCE] if not bad else []
             if bad:
                 errors.append(f"extra_sources gecersiz ('.uzanti': 'Dil adi' bekleniyor): {', '.join(bad)}")
             elif known:
                 errors.append(f"extra_sources zaten kaynak olan uzantiyi yeniden tanimliyor: {', '.join(known)}")
             else:
-                cfg[key], sources[key] = {k.lower(): v for k, v in value.items()}, "config"
+                cfg[key], sources[key] = {k.lower(): v["name"] if isinstance(v, dict) else v for k, v in value.items()}, "config"
+                cfg["_diller"] = {k.lower(): v for k, v in value.items() if isinstance(v, dict)}   # described languages
         elif key not in INT_KEYS and not (isinstance(value, list) and all(isinstance(x, str) for x in value)):
             errors.append(f"{key} metin listesi degil")
         else:
