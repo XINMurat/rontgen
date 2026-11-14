@@ -56,6 +56,7 @@ from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
 import go_dili, jvm_dili, orm_dili  # noqa: E401,E402
 import rust_dili
+from yapi_rapor import render  # noqa: E402
 
 DECL = {
     "cs": re.compile(r"\b(?:class|record|interface|enum|struct)\s+([A-Z]\w+)"),
@@ -90,6 +91,10 @@ WEB_IMPORT = re.compile(r"""(?:from|import)\s+['"](\.{1,2}/[^'"]+)['"]""")
 PROJECT_REF = re.compile(r"<ProjectReference\s+Include=\"([^\"]+)\"", re.I)
 WORD = re.compile(r"[A-Za-z_]\w+"); NOCOMMENT = re.compile(r"//[^\n]*|/\*.*?\*/", re.S)  # [H]: a name in a comment is no use
 MIN_NAME = 5
+
+
+def ranked(counter):   # most_common breaks ties by insertion, i.e. by hash order: two runs drew different edges
+    return sorted(counter.items(), key=lambda x: (-x[1], x[0]))
 
 
 def module_of(path: str, depth: int) -> str:
@@ -282,24 +287,24 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
     for rs in routes.values():
         for _, _, path in rs:
             prefix["/" + "/".join([s for s in path.split("/") if s and not s.startswith("{")][:2])] += 1
-    edges = ([{"from": a, "to": b, "files": n, "tier": "K", "weak": False} for (a, b), n in mod_hard.most_common()]
-             + [{"from": a, "to": b, "files": n, "tier": "H", "weak": n < weak} for (a, b), n in mod_soft.most_common()])
-    biggest = sorted(outlines, key=lambda p: -outlines[p][0])[:top]
+    edges = ([{"from": a, "to": b, "files": n, "tier": "K", "weak": False} for (a, b), n in ranked(mod_hard)]
+             + [{"from": a, "to": b, "files": n, "tier": "H", "weak": n < weak} for (a, b), n in ranked(mod_soft)])
+    biggest = sorted(outlines, key=lambda p: (-outlines[p][0], p))[:top]
     return {
         "repo": os.path.abspath(repo), "depth": depth, "weak_edge": weak,
         "excluded": {k: sorted(v) for k, v in excluded.items()},
-        "modules": dict(sorted(mods.items(), key=lambda x: -x[1]["lines"])),
+        "modules": dict(sorted(mods.items(), key=lambda x: (-x[1]["lines"], x[0]))),
         "edges": edges, "fan": fan,
         "edge_counts": {"K": len(mod_hard), "H": len(strong_soft), "H_weak": len(mod_soft) - len(strong_soft)},
         "cycles": cyc_k, "cycle_candidates": cyc_h,
         "blind_spots": kor_noktalar({p: t for p, (f, t) in files.items() if f not in ("sql", EXTRA) and not is_test(p)}),
         "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"), "java": lang.get("java"),
-        "most_used_files": [{"path": p, "used_by": n} for p, n in file_in.most_common(top)],
+        "most_used_files": [{"path": p, "used_by": n} for p, n in ranked(file_in)[:top]],
         "entry": {"mains": sorted(mains), "functions": entry_fns, "missing": sorted(set(wanted) - found - {"main"}),
                   "route_count": sum(len(v) for v in routes.values()),
                   "route_test": sum(len(v) for k, v in routes.items() if is_test(k)),
                   "routes_by_file": {p: len(v) for p, v in sorted(routes.items(), key=lambda x: -len(x[1]))},
-                  "routes_by_prefix": dict(prefix.most_common(40))},
+                  "routes_by_prefix": dict(ranked(prefix)[:40])},
         "stores": {"tables": len(tables),
                    "unmentioned": sorted(t for t, u in use.items() if not (u["write"] or u["read"] or u["quoted"])),
                    "by_table": {t: {"declared_in": tables[t], "written_by": sorted(u["write"]), "read_by": sorted(u["read"]),
@@ -309,111 +314,6 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
                         "marks": [{"line": a, "depth": b, "kind": c, "name": d} for a, b, c, d in outlines[p][1]]}
                     for p in biggest},
     }
-
-
-def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
-    o = [f"# Yapi — {os.path.basename(r['repo'])}", "",
-         "Koddan uretildi; elle cizilmedi. **Duz ok `[K]`**: depoda cozulen beyan edilmis bagimlilik (import, proje basvurusu,",
-         "[K] kazanmis sonda). **Kesik ok `[H]`**: tek bir dosyada tanimli bir adin ayni dil ailesinden baska bir dosyada gecmesi —",
-         "vekildir: yaygin bir sozcuk sahte ok uretir, yansima ve bagimlilik enjeksiyonu hic ok uretmez.", "",
-         "- Ayarlar: " + thresholds_line(cfg, sources, ("module_depth", "weak_edge")), "",
-         "## Olcume girmeyenler", ""] + excluded_lines(r["excluded"]) + ["", "## Blok semasi", "", "```mermaid", "flowchart LR"]
-    drawn = [e for e in r["edges"] if not e["weak"]][:max_edges]
-    used = {e["from"] for e in drawn} | {e["to"] for e in drawn}
-    for m, v in r["modules"].items():
-        if m in used:
-            o.append(f'  {node_id(m)}["{m if m != "." else "(kok dizin)"}<br/>{v["files"]} dosya · {v["lines"]} satir'
-                     + (f' · {v["kaynak_disi"]} kaynak disi' if v.get("kaynak_disi") else "") + '"]')
-    for e in drawn:
-        o.append(f'  {node_id(e["from"])} {"-->" if e["tier"] == "K" else "-.->"}|{e["files"]}| {node_id(e["to"])}')
-    c = r["edge_counts"]
-    o += ["```", "", f"Cizilen {len(drawn)} bag. Toplam: [K] {c['K']}, [H] {c['H']}, **zayif [H] {c['H_weak']}** "
-          f"({r['weak_edge']} dosya ciftinden azina dayanan; cizilmedi, donguye katilmadi). Ok ustundeki sayi: dosya cifti.", ""]
-    weak = [e for e in r["edges"] if e["weak"]]
-    if weak:
-        o += ["Zayif baglar (dogrulanmadan bag sayilmaz): "
-              + "; ".join(f"{e['from']} → {e['to']} ({e['files']})" for e in weak[:12]) + (" …" if len(weak) > 12 else ""), ""]
-
-    def table(head, rows):
-        o.append("| " + " | ".join(head) + " |"); o.append("|" + "---|" * len(head))
-        o.extend("| " + " | ".join(str(x) for x in row) + " |" for row in rows)
-        o.append("")
-
-    o += ["## Moduller", "", "Giren: bu module yaslanan modul sayisi; cikan: yaslandigi modul sayisi. [K] ve [H] ayri sayilir.", ""]
-    table(["Modul", "Dosya", "Satir", "Giren K", "Giren H", "Cikan K", "Cikan H"],
-          [(m + (f" (+{v['kaynak_disi']} kaynak disi)" if v.get("kaynak_disi") else ""), v["files"], v["lines"],
-            r["fan"][m]["in_k"], r["fan"][m]["in_h"], r["fan"][m]["out_k"], r["fan"][m]["out_h"])
-           for m, v in r["modules"].items()])
-    o += ["## Donguler", ""]
-    o += ([f"- `[K]` {' ↔ '.join(g)}" for g in r["cycles"]] or ["Beyan edilmis bagimliliklarda (`[K]`) modul dongusu yok."]) + [""]
-    if r["cycle_candidates"]:
-        o += ["Aday donguler — yalniz `[H]` baglarla kapanir; **dogrulanmadan dongu denmez**:"]
-        o += [f"- `[H]` {' ↔ '.join(g['modules'])} (en ince bagi {g['thinnest']} dosya cifti)" for g in r["cycle_candidates"]] + [""]
-
-    o += ["## Kor noktalar — sonda adaylari", "",
-          "Bu betiklerin izleyemedigi mekanizmalarin kodda ne kadar gectigi. Bir sayi buyukse o mekanizmanin arkasindaki baglar",
-          "semada **yoktur**. Projeye ozgu bir sonda ancak buradaki bir bosluk icin yazilir (sonda.py).", ""]
-    if r["blind_spots"]:
-        table(["Mekanizma", "Dosya", "Isabet", "En yogun"],
-              [(k, v["files"], v["hits"], ", ".join(f"`{p}` ({n})" for p, n in v["top"][:3])) for k, v in r["blind_spots"].items()])
-    else:
-        o += ["Taninan bir kor nokta kalibi bulunmadi (kaliplarin tanimadigi mekanizmalar olabilir).", ""]
-    if r["probes"]:
-        o += ["Yuklenen sonda sonuclari:"]
-        o += [f"- `{p['sonda']}` [{p['tier']}] — {p['edges']} dosya bagi, {p['accepted']} kabul, commit `{p['commit']}`, oz-test {p['oz_test']}"
-              + (f"; ucu kaynak disi dosyada (kabul): {p['outside_count']}" if p["outside_count"] else "")
-              + (f"; **ucu dislanan dosyada (red) {p['excluded_count']}**: {', '.join(p['excluded_files'])}" if p["excluded_count"] else "")
-              + (f"; **{p['unknown_count']} bilinmeyen dosya yolu yok sayildi**: {', '.join(p['unknown_files'])}" if p["unknown_count"] else "")
-              for p in r["probes"]] + [""]
-
-    o += c_dili.render(r["c"]) if r["c"] else []
-    for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)"),
-                              ("java", "Java/Kotlin `import`", "kaynak kokleri")):
-        rn = r.get(key)
-        o += ([f"## {title} baglari", "", f"{rn['files']} dosya, {roots}: {', '.join(rn['crates']) or 'bildirim bulunamadi'}. "
-              f"`[K]` cozulen: {rn['uses']['K']} (dosya bagi {rn['file_edges']}); depo disi (dis, bag yok): {rn['uses']['dis']}; "
-              f"**cozulemeyen** (kor nokta): {rn['uses']['cozulemeyen']}."]
-              + ([f"Cozulemeyen ornekleri: " + "; ".join(f"`{x}`" for x in rn["uses"]["ornek"])] if rn["uses"].get("ornek") else []) + [""]
-              if rn else [])
-    o += ["## En cok yaslanilan dosyalar `[H]`", ""]
-    table(["Dosya", "Yaslanan dosya"], [(x["path"], x["used_by"]) for x in r["most_used_files"]] or [("-", "-")])
-    e = r["entry"]
-    o += ["## Giris yuzeyi `[H]`", "", f"- Kalipla taninan **{e['route_count']} HTTP ucu** "
-          f"({e.get('route_test', 0)} tanesi test dosyalarinda); baslangic noktasi sayilan dosyalar: "
-          + (", ".join(f"`{m}`" for m in e["mains"][:10]) or "bulunamadi") + (" …" if len(e["mains"]) > 10 else ""),
-          "- Giris islevleri (`main` kalipla: C her yerde, Rust yalniz ikili hedefte; digerleri yalniz config `entry_points` adiyla): "
-          + (", ".join(f"`{x['name']}` `{x['path']}:{x['line']}` ({x['source']})" for x in e["functions"][:12]) or "yok")
-          + (f" … ve {len(e['functions']) - 12} tane daha (`yapi.json`)" if len(e["functions"]) > 12 else "")
-          + (f"; **config'te adi olup bulunamayan: {', '.join(e['missing'])}**" if e["missing"] else ""), ""]
-    if e["routes_by_file"]:
-        table(["Dosya", "Uc"], list(e["routes_by_file"].items())[:10])
-        table(["Yol oneki", "Uc"], list(e["routes_by_prefix"].items()))
-    s = r["stores"]
-    o += ["## Veri depolari `[H]`", "",
-          f"SQL ya da ORM'de tanimli {s['tables']} tablo. **Yazan**: INSERT / UPDATE / DELETE ifadesinde; **okuyan**: FROM / JOIN ifadesinde;",
-          "**tirnakli**: yalniz tirnak icinde adi gecen (ad kodla kurulan sorguya veriliyor olabilir). Adi duz yazida ya da sutun",
-          "basligi olarak gecen dosya sayilmaz. Sorgu metni parcalardan kuruluyorsa eksik sayar.", ""]
-    table(["Tablo", "Tanim", "Yazan", "Okuyan", "Tirnakli"],
-          [(t, v["declared_in"], len(v["written_by"]), len(v["read_by"]), len(v["quoted_in"])) for t, v in list(s["by_table"].items())[:30]]
-          or [("-", "-", "-", "-", "-")])
-    if s["unmentioned"]:
-        o += [f"Hicbir kod dosyasinda gecmeyen {len(s['unmentioned'])} tablo (olu yuzey adayi; kanit degil): "
-              + ", ".join(s["unmentioned"][:40]) + (" …" if len(s["unmentioned"]) > 40 else ""), ""]
-    o += ["## En buyuk dosyalarin iskeleti", "",
-          "Satir numarali bildirimler ve uclar. Tipler ve Python / TS islevleri `[K]`; C# yontemleri kalipla taninir `[H]`",
-          "(niteleyicisiz yerel islevler ve ifade govdeli uyeler kacabilir). C / C++ islev ve tipleri kalipla taninir `[H]`;",
-          "makroyla uretilen tanimlar aranmaz.", ""]
-    for p, v in r["outline"].items():
-        o.append(f"### `{p}` — {v['lines']} satir, {len(v['marks'])} bildirim")
-        if not v["marks"]:
-            o += ["", "Bildirim bulunamadi: iskelet **olculmedi**.", ""]
-            continue
-        o.append("")
-        o.extend(f"{'  ' * min(m['depth'], 4)}- {m['line']}: {m['kind']} `{m['name']}`" for m in v["marks"][:80])
-        if len(v["marks"]) > 80:
-            o.append(f"- … {len(v['marks']) - 80} bildirim daha (yapi.json)")
-        o.append("")
-    return "\n".join(o) + "\n"
 
 
 def self_test() -> int:
