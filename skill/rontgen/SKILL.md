@@ -4,7 +4,7 @@ description: Takes an X-ray of an existing codebase and writes the documents tha
 license: MIT
 metadata:
   author: XINMurat
-  version: "0.5"
+  version: "0.6"
   status: draft
 ---
 
@@ -230,7 +230,7 @@ changed (`BAYAT`): those are re-read, not patched.
 
 ## Status
 
-Draft 0.5. Not yet a member of the family: no git repository, no bilingual
+Draft 0.6. Not yet a member of the family: no git repository, no bilingual
 docs, no package, no CI, no token budget, no schema, no eval.
 
 Measured so far (details in `references/kanit.md`): the core has run on
