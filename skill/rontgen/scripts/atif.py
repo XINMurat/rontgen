@@ -324,14 +324,13 @@ def capala(repo: str, docs: str, out=sys.stdout) -> int:
 
     git = has_git(repo)
     side = os.path.join(docs, SIDECAR)
+    if not os.path.exists(side):            # three runs stopped here: create it, tied to HEAD (or to no commit)
+        sha = subprocess.run(["git", "-C", repo, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() if git else NO_COMMIT
+        with io.open(side, "w", encoding="utf-8", newline="\n") as f:
+            f.write(f"# commit: {sha}\n")
+        say(f"{SIDECAR} yoktu: olusturuldu, capalar {sha[:8]} surumune baglandi (okuma bu surumde yapildi varsayildi).")
     if not git:
         say(NO_GIT)
-        if not os.path.exists(side):
-            with io.open(side, "w", encoding="utf-8", newline="\n") as f:
-                f.write(f"# commit: {NO_COMMIT}\n")
-    if not os.path.exists(side):
-        say(f"olculmedi: {side} yok. Once '# commit: <sha>' satiriyla olusturun: capa, okunan surume baglanir.")
-        return 2
     commit, rows, errors = load_sidecar(side)
     if errors or (git and not commit):
         say("olculmedi: " + ("; ".join(errors) if errors else "yan dosyada '# commit:' yok; hangi surume capalanacagi bilinmiyor"))
