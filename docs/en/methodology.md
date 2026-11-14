@@ -78,7 +78,9 @@ python scripts/paket.py   --repo . --out rontgen-out
 Run them first, read code second: reading first anchors you on whichever
 file you opened. Then read what was left out — the **"Olcume girmeyenler"**
 list and the unclassified extensions — and correct it in
-`rontgen.config.json` before going on. With no git history, churn, coupling
+`rontgen.config.json` before going on — in the output folder, passed with
+`--config`, when the repository is not yours to write (one run left test
+files counted as source rather than write there). With no git history, churn, coupling
 and knowledge are **unmeasured**, not zero. Config, exclusions, live
 vendored code, extra sources and entry points: `references/olcum.md`.
 

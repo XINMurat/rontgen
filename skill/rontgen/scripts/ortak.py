@@ -68,7 +68,7 @@ NOT_SOURCE = {".md", ".txt", ".json", ".yaml", ".yml", ".xml", ".csv", ".lock", 
               ".jpeg", ".gif", ".ico", ".pdf", ".docx", ".xlsx", ".xls", ".zip", ".toml", ".ini", ".cfg",
               ".editorconfig", ".gitignore", ".gitattributes", ".sln", ".csproj", ".props", ".config", ".map",
               ".woff", ".woff2", ".ttf", ".db", ".skill", ".ndjson", ".log", ".tsbuildinfo", ".tsv", ""}
-TEST_HINT = re.compile(r"(^|/)(tests?|spec|specs|__tests__|fixtures?|sinama|testler)(/|$)|(\.|_|-)(test|spec)\."
+TEST_HINT = re.compile(r"(^|/)(tests?|spec|specs|__tests__|fixtures?|sinama|testler)(/|$)|(\.|_|-)(tests?|spec)\."
                        r"|(?-i:Test(s|leri)?)\.[a-z]+$|(^|/)test_|[.\-_]Tests?(/|$)", re.I)
 BUILD_DIRS = {"node_modules", "dist", "build", "bin", "obj", "vendor", "target", "__pycache__", ".next", ".nuxt", "coverage"}
 HASHED = re.compile(r"[-.][A-Za-z0-9_]{8,}\.(js|css|mjs)$")
@@ -368,7 +368,8 @@ def self_test() -> int:
         check("git yok: dizinden okunur, derleme ve gizli dizine girilmez", sorted(paths) == ["src/a.rs", "src/bin/b.rs"])
         check("git yok: girilmeyen dizinler nedeniyle raporlanir",
               sorted(sum(skipped.values(), [])) == [".github/", "target/", "web/node_modules/"])
-    check("test ipucu", is_test("a/tests/B.cs") and is_test("a.test.ts") and not is_test("src/Odeme.cs"))
+    check("test ipucu", is_test("a/tests/B.cs") and is_test("a.test.ts") and not is_test("src/Odeme.cs")
+          and is_test("scripts/js-api-tests.js") and not is_test("src/latests.js"))
     check("test ipucu: .NET test projesi dizini", is_test("x/App.Api.Tests/Kontrol.cs") and not is_test("src/Contest/a.cs")
           and not is_test("src/Latest.cs"))
     with tempfile.TemporaryDirectory() as d:
