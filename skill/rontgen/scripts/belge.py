@@ -48,7 +48,7 @@ import sys
 import tempfile
 from collections import Counter
 
-from ortak import NOT_SOURCE, list_files, load_config, read_sources, source_map
+from ortak import NOT_SOURCE, list_files, load_config, matches, read_sources, source_map
 import dil  # noqa: E402
 
 TICK = re.compile(r"`([^`\s]+)`")
@@ -100,7 +100,8 @@ def build(repo: str, cfg: dict) -> dict:
     exts = (set(source_map(cfg)) | NOT_SOURCE) - {""}
     top = {p.split("/")[0] for p in paths}
     docs, named, counts, stale, ambiguous, broken = [], set(), Counter(), [], Counter(), []
-    for doc in sorted(p for p in paths if p.lower().endswith(".md")):
+    skipped_docs = [p for p in paths if p.lower().endswith(".md") and matches(p, cfg.get("exclude_globs", []))]
+    for doc in sorted(p for p in paths if p.lower().endswith(".md") and p not in skipped_docs):   # archived copies are not the map
         try:
             with io.open(os.path.join(repo, doc), encoding="utf-8", errors="replace") as f:
                 lines = f.read().splitlines()
@@ -195,6 +196,8 @@ def self_test() -> int:
         md = render(r, "t")
         check("rapor: sayilar, aday tablosu, anilmayan modul ve bayat yol", "**4 var**" in md and "| `docs/DEV.md` | 3 |" in md
               and "| `src/store` | 50 |" in md and "`src/gone.rs`" in md)
+        r2 = build(d, dict(cfg, exclude_globs=["docs/A.md"]))
+        check("dislama belgeye de uygulanir: arsiv kopyasi haritada yer almaz", [x["doc"] for x in r2["docs"]] == ["docs/DEV.md"])
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 

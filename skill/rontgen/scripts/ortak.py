@@ -251,8 +251,11 @@ def load_config(repo: str, path):
             continue
         if key not in DEFAULTS:
             errors.append(f"bilinmeyen config anahtari: {key}")
-        elif key == "report_lang" and value not in ("tr-ascii", "tr", "en"):
-            errors.append(f"report_lang bilinmiyor: {value!r} (tr-ascii, tr, en; varsayilana dusulmez)")
+        elif key == "report_lang":       # two runs stopped on "not a list": a valid value fell through to the list check
+            if value in ("tr-ascii", "tr", "en"):
+                cfg[key], sources[key] = value, "config"
+            else:
+                errors.append(f"report_lang bilinmiyor: {value!r} (tr-ascii, tr, en; varsayilana dusulmez)")
         elif key in INT_KEYS and (isinstance(value, bool) or not isinstance(value, int) or value <= 0):
             errors.append(f"{key} pozitif tamsayi degil: {value!r}")
         elif key == "extra_sources":
@@ -389,6 +392,10 @@ def self_test() -> int:
         check("config: deger ve kaynagi", c["max_file_lines"] == 400 and s["max_file_lines"] == "config" and e == [])
         write('{"max_file_lines": "400"}')
         check("config: metin esik reddedilir", load_config(d, None)[2] != [])
+        write('{"report_lang": "tr"}')
+        c, s, e = load_config(d, None)
+        write('{"report_lang": "de"}')
+        check("config: report_lang gecerli deger kabul, bilinmeyen red", e == [] and c["report_lang"] == "tr" and load_config(d, None)[2] != [])
         write('{"max_fil_lines": 400}')
         check("config: yanlis yazilmis anahtar hatadir", "bilinmeyen" in load_config(d, None)[2][0])
         check("config: verilen yol yoksa hata", load_config(d, os.path.join(d, "yok.json"))[2] != [])

@@ -66,7 +66,8 @@ TR_STEMS = {
     "yaslandig": "yaslandığ", "dagit": "dağıt", "agac": "ağaç", "degerl": "değerl", "goster": "göster", "olustur": "oluştur",
 }
 _TR = sorted(TR_STEMS.items(), key=lambda kv: -len(kv[0]))
-_TR_RX = re.compile(r"\b(" + "|".join(re.escape(k) for k, _ in _TR) + r")([a-z]*)", re.I)
+_TR_RX = re.compile(r"(?<![\w./\\-])(" + "|".join(re.escape(k) for k, _ in _TR) + r")([a-z]*)(?![\w./\\-])", re.I)
+# a word joined to _ . / \ - is a name (disa_aktar.py, helix-view): one run turned a file name into Turkish
 
 # phrase (as rendered, exact) -> English; longest first
 EN = [
@@ -258,6 +259,8 @@ def self_test() -> int:
     tr = cevir(md, "tr")
     t("tr: aksan geri gelir, ekler korunur", "## Sıcak noktalar" in tr and "10 satır" in tr and "Ölçülmedi" in tr and "yalnız" in tr)
     t("tr: ters tirnak ve kod blogu degismez", "`src/satir.rs:4`" in tr and "\nsatir yok\n" in tr)
+    t("tr: dosya adi gibi bitisik sozcuk degismez", cevir("disa_aktar.py ve kor-nokta ile satir/yol", "tr")
+      == "disa_aktar.py ve kor-nokta ile satir/yol")
     en = cevir(md, "en")
     t("en: baslik ve etiketler cevrilir, kod degismez", "## Hotspots" in en and "10 lines" in en and "`src/satir.rs:4`" in en
       and "\nsatir yok\n" in en)
