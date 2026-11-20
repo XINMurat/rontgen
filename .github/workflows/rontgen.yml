@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      - name: Shared tools' one dependency
+        run: pip install pyyaml   # check_lang_parity.py reads docs/_config.yml; the skill's own scripts need nothing
       - name: Forbidden terms (from secret)
         env:
           TERMS: ${{ secrets.RONTGEN_FORBIDDEN_TERMS }}
