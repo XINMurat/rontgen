@@ -13,19 +13,23 @@ license_note: "Code MIT · prose CC BY 4.0."
 
 nav_en:
   - { name: "Overview", url: "/" }
+  - { name: "Quickstart", url: "/QUICKSTART.html" }
   - { name: "Methodology", url: "/en/methodology.html" }
   - { name: "Measuring", url: "/en/measuring.html" }
   - { name: "Reading", url: "/en/reading.html" }
   - { name: "Document set", url: "/en/documents.html" }
   - { name: "Delivery", url: "/en/delivery.html" }
+  - { name: "Own language", url: "/en/custom-language.html" }
   - { name: "Evidence", url: "/en/evidence.html" }
 nav_tr:
   - { name: "Genel bakış", url: "/" }
+  - { name: "Hızlı başlangıç", url: "/QUICKSTART.html" }
   - { name: "Metodoloji", url: "/tr/metodoloji.html" }
   - { name: "Ölçüm", url: "/tr/olcum.html" }
   - { name: "Okuma", url: "/tr/okuma.html" }
   - { name: "Belge seti", url: "/tr/belgeler.html" }
   - { name: "Teslim", url: "/tr/teslim.html" }
+  - { name: "Özel dil", url: "/tr/ozel-dil.html" }
   - { name: "Kanıt", url: "/tr/kanit.html" }
 pairs:
   - { en: "/en/methodology", tr: "/tr/metodoloji" }
@@ -33,6 +37,7 @@ pairs:
   - { en: "/en/reading", tr: "/tr/okuma" }
   - { en: "/en/documents", tr: "/tr/belgeler" }
   - { en: "/en/delivery", tr: "/tr/teslim" }
+  - { en: "/en/custom-language", tr: "/tr/ozel-dil" }
   - { en: "/en/evidence", tr: "/tr/kanit" }
 
 defaults:

@@ -1,4 +1,4 @@
-> Bu sayfa skill/rontgen/references/kanit.md dosyasının çevirisidir; kaynak İngilizce metindir.
+> Kaynak: skill/rontgen/references/kanit.md · sha256:f00fb6ba340f — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
 
 # Kuralların arkasındaki kanıt
 
@@ -9,127 +9,132 @@ yok, paket yok, CI yok, token bütçesi yok, şema yok, değerlendirme (eval) yo
 
 Şimdiye dek kanıt ve sınırları:
 
-- Çekirdek beş depoda (C#/TypeScript, C#/SQL, Python) çalıştı.
-  O koşu bunlardan birinde kaynak olarak sayılmış üretilmiş migration
-  dosyaları buldu; dışlama kuralı ondan gelir. C ağırlıklı bir depoda (522 C
-  dosyası) `#include` çözümlemesi `[K]` modül kenarlarını 1'den 123'e
-  çıkardı; `#include` satırlarına karşı elle denetlenen on kenarın hepsi
-  tuttu. Adı iki kök altında var olan include'lar (orada 35 tane) kenar
-  almaz, oysa derlemenin kök sırası onları belirlerdi. Hiç git olmayan bir
-  dizinde (Rust ve C#, 575 kaynak dosyası) iki çekirdek betik de çalıştı ve
-  dört geçmiş bölümü "ölçülmedi" dedi; o koşu ayrıca derleme çıktısı olarak
-  dışlanmış olan `src/bin`'in Rust kaynağı tuttuğunu gösterdi. C ağırlıklı
-  depoda yeni bir okuyucu, davranışın betiklerin saymadığı dört kurum içi
-  biçimdeki 300 dosyada yaşadığını buldu; bir sonda 40 kenarından 29'unu
-  onlara kaybetti. Onları `extra_sources` içinde adlandırmak 290'ını ölçüme
-  kattı ve kaybedilen kenarları 13'e indirdi; var olan her dosyanın bir sonda
-  kenarının ucu olmasına izin vermek onları 0'a indirdi. Aynı koşunun
-  kaydedilmiş denetim listesi bir sonraki denetimde 13 yanlış "çapasız" atıf
-  üretti ve kökteki bir `CMakeLists.txt` belirsiz sayıldı; ikisi de düzeltildi.
-  Java ve Go örüntüleri yalnızca öz-sınamalarla denendi. Git olmayan bir Rust
-  deposunda (291 Rust dosyası) ilk ana hat genel (generic) kodun
-  tanımlarının yarısını kaçırdı ve örneklenen 10 ad kenarından 8'i yanlıştı;
-  Rust modülünden (`mod` / `use` çözümlemesi, ad vekili yok) sonra ana hat
-  denetlenen dört dosyadaki her tanımı buldu ve örneklenen kenarların 10'da
-  10'u tuttu.
+- Çekirdek beş depoda çalıştı (C#/TypeScript, C#/SQL, Python).
+  O koşu, birinde kaynak olarak sayılmış üretilmiş migration dosyaları buldu;
+  dışlama kuralı ondan gelir. C ağırlıklı bir depoda (522 C dosyası)
+  `#include` çözümlemesi `[K]` modül kenarlarını 1'den 123'e çıkardı; `#include`
+  satırlarına karşı elle denetlenen on kenarın hepsi tuttu. Adı iki kök altında
+  bulunan include'lar (orada 35 tane) kenar almaz, oysa derlemenin kök sırası
+  onlara karar verirdi. Hiç git'i olmayan bir dizinde (Rust ve C#, 575 kaynak
+  dosyası) iki çekirdek betik de çalıştı ve dört geçmiş bölümü "ölçülmedi"
+  dedi; o koşu ayrıca `src/bin`'in derleme çıktısı olarak dışlanmış Rust
+  kaynağı tuttuğunu gösterdi. C ağırlıklı depoda yeni bir okuyucu, davranışın
+  betiklerin saymadığı dört kurum içi biçimdeki 300 dosyada yaşadığını buldu;
+  bir sonda 40 kenarının 29'unu onlara kaptırdı. Onları `extra_sources`
+  içinde adlandırmak 290'ını ölçüme getirdi ve kaybedilen kenarları 13'e
+  indirdi; var olan herhangi bir dosyanın bir sonda kenarını bitirmesine izin
+  vermek onları 0'a indirdi. Aynı koşunun kaydedilmiş kontrol listesi bir
+  sonraki denetimde 13 sahte "çapasız" atıf üretti ve kökteki bir
+  `CMakeLists.txt` belirsiz sayıldı; ikisi de düzeltildi.
+  Java ve Go örüntüleri yalnız öz-testlerle sınanıyor. Git'i olmayan bir Rust
+  deposunda (291 Rust dosyası) ilk iskelet generic kodun tanımlarının yarısını
+  kaçırdı ve örneklenen 10 ad kenarının 8'i yanlıştı; Rust modülünden sonra
+  (`mod` / `use` çözümlemesi, ad vekil ölçüsü yok) iskelet denetlenen dört
+  dosyadaki her tanımı buldu ve örneklenen 10 kenarın 10'u tuttu.
 - Okuma yarısı **beş kez** yapıldı. Beşincisi Rust koşusunu o kuralla
-  yineledi: önce modül haritasını açtı, kaçırılan 8 noktadan 3'ünü adlandırdı
-  (önceden 0) ve 20'den 16'sını tuttu; geri kalanı bir bağlantı daha
-  ötedeydi, haritayı izle kuralı buradan gelir. C ağırlıklı depoda yukarıdaki
-  kurallardan sonra yapılan ikinci yeni bir koşu kör denetiminde 20'den
-  12'sini tuttu. Rust deposunda yeni bir koşu (satırların %0.4'ü okundu, git
-  yok) 20'den 15'ini tuttu ve mimari belgesiyle hiçbir yerde çelişmedi, ama
+  yineledi: önce modül haritasını açtı, kaçırılan 8 noktanın 3'ünü adlandırdı
+  (önce 0'dı) ve 20'nin 16'sını tuttu; geri kalanı bir bağlantı daha
+  ötedeydi, haritayı izleme kuralı oradan gelir. Yukarıdaki kurallardan sonra
+  C ağırlıklı depoda ikinci bir yeni koşu kör denetiminde 20'nin 12'sini
+  tuttu. Rust deposunda yeni bir koşu (satırların %0.4'ü okundu, git yok)
+  20'nin 15'ini tuttu ve mimari belgesiyle hiçbir yerde çelişmedi, ama
   ilkesini, çalışma zamanını, depolama yerleşimini ve çoğaltmayı kaçırdı:
   bunlar açmadığı belgelerdeydi. Gezinme belgeleri kuralı ondan gelir.
-  Daha önce, iki kez: Bir kez okuyucusunun zaten tanıdığı bir depoda
-  (kaynak satırlarının %6'sı okundu, başka kimse denetlemedi). Bir kez de
-  hiç görmediği C ağırlıklı depoda yeni bir oturumla: kaynak satırlarının
-  %1.9'u okundu, 30 çapanın 30'u yerinde ve başka bir oturumun (bir kişinin
-  değil) atıf yapılmış 20 cümle üzerindeki kör denetimi tutan 9, tutmayan 1
-  ve satırının gösterdiğinden fazlasını söyleyen 10 cümle buldu — "bir
-  iddia, bir çapa" kuralı oradan gelir. Oturumun haritası mekanizma
-  bakımından deponun kendi mimari belgeleriyle örtüştü ve yazarların tasarım
-  dağarcığını (katmanlar, ilkeler, numaralı kararlar) kaçırdı; dağarcık
-  kuralı oradan gelir. Kör okuması kusurluydu: deponun `CLAUDE.md`'si
-  başlangıçta bağlamına kendiliğinden yüklenmişti.
-- **Bu skill ile ve onsuz**, bir kez, hiçbir oturumun görmediği küçük bir C#
+  Daha önce, iki kez: Bir kez okuyucusunun zaten bildiği bir depoda (kaynak
+  satırlarının %6'sı okundu, başka kimse denetlemedi). Bir kez de yeni bir
+  oturum tarafından, hiç görmediği C ağırlıklı depoda: kaynak satırlarının
+  %1.9'u okundu, 30 çapanın 30'u yerinde, ve atıflı 20 cümlenin başka bir
+  oturumca (bir kişi değil) yapılan kör denetimi 9'unun tuttuğunu, 1'inin
+  tutmadığını ve 10'unun satırlarının gösterdiğinden fazlasını söylediğini
+  buldu — "bir iddia, bir çapa" kuralı oradan gelir. Oturumun haritası
+  mekanizmada deponun kendi mimari belgeleriyle örtüştü ve yazarların tasarım
+  sözcük dağarcığını (katmanlar, ilkeler, numaralı kararlar) kaçırdı; sözcük
+  dağarcığı kuralı oradan gelir. Kör okuması kusurluydu: deponun `CLAUDE.md`'si
+  başlangıçta bağlamına otomatik olarak yüklenmişti.
+- **Bu beceriyle ve onsuz**, bir kez, hiçbir oturumun görmediği küçük bir C#
   kütüphanesinde (1,944 satır), iki yeni oturum aynı görevi aldı. Hangisinin
-  neyi yazdığı söylenmeyen kör bir okuyucu, skill'in kolundan atıf yapılmış
-  20 cümleden 19'unu, diğerinden 20'den 16'sını tuttu; skill'in kolu hiç
-  yanlış iddiada bulunmadı, diğeri bir kez. Ama skill olmayan kol koddan
-  yazılmış bir başvuru listesinin 12 noktasının hepsini kapsadı (skill'in
-  kolu 10) ve daha çok risk buldu. Burada skill yazılanı daha doğru yaptı,
-  anlaşılanı daha geniş değil; doğruluğun geldiği yer, teslimden önce
-  çalıştırılan kendi ikinci okuyucusuydu (ilk taslağı 12'den 6'sını tuttu).
-  Tek depo, tek örnek: bir hipotez, skill'in genel bir ölçümü değil. Skill
-  olmayan ama teslimden önce cümlelerinden on ikisini ikinci bir okuyucuya
-  denetletmesi söylenen üçüncü bir kol, yeni bir kör örneklemde skill'in
-  17'sine karşı 20'den 16'sını tuttu ve 12 noktanın hepsini kapsadı. Bütünü
-  okunacak kadar küçük bir depoda skill'in ölçülebilir kazancı o tek adımdı;
-  ölçme yarısı orada sınanmadı. Aynı belgeler iki örneklemde 19 ve 17 aldı:
-  iki üç puanlık farklar gürültünün içindedir.
-- **Aynı üç kol büyük bir depoda** (Rust, yaklaşık 108k satır, mimari
-  belgesi tüm geçmişten silinmiş). Üçü de kaynağın %2'sinden azını okudu ve
-  aynı yolu yürüdü (tuş, komut, düzenleme).
-  Kör bir okuyucu skill'in kolundan 20'den 18'ini, düz koldan 15'ini ve
-  ikinci okuyuculu koldan 20'sini tuttu; hiçbiri yanlış iddiada bulunmadı.
-  Silinen belgeden yazılmış 14 noktalık bir listeye karşı 5.5, 6 ve 4.5
-  kapsadılar. Hiçbiri belgenin adlandırdığı tasarım fikirlerini (işlevsel
-  çekirdek, görünüm başına seçimler, bölme başına bir görünüm) bulamadı.
-  Yani büyük bir depoda da ölçme yarısı haritayı genişletmedi ve ikinci bir
-  okuyucu çalıştıran kol en doğrusuydu. Skill'in kolu o sefer kendi ikinci
-  okuyucusunu atladı; ikinci okuyuculu kol başka bir kolun aynı kopyasını
-  okudu; belgenin eski bir sürümü geçmişte başka bir yol altında kalmıştı.
-  Bunların hiçbiri skill'in lehine değil. Birlikte ele alındığında: iki kez
-  kazanç gösteren tek adım teslimden önceki ikinci okuyucudur.
-- Bir sonda yazıldı (kurum içi yapıt adları → kullanıcıları, 40 kenar,
-  öz-sınama 6/6). Sondaların maliyetini karşılayıp karşılamadığı hâlâ bir
-  hipotez.
-- **Yalnızca belgeleri olan bir okuyucu** (kod yok) o büyük depo hakkındaki
-  aynı sekiz soruyu yanıtladı: skill'in belgelerinden 8'de 4.5, diğer iki
-  koldan 3 ve 2. Farkın bir kısmı yazılı sayfalardan değil, üretilmiş işlev
-  ana hattından geldi; bir ayrıntı okuyucuyu bir neden konusunda yanılttı ve
-  hiçbir kol görünüm başına durumun nerede yaşadığını söylemedi. Mimari
-  sayfası ve "raporları saklayın" kuralı ondan gelir. Kod erişimiyle üç
-  okuyucu da sekizini de yanıtladı: o test tavanındaydı.
-- **Aynı büyük depoda 0.5 sürümü** (yeni kopya, tek koşu): oturum kendi
-  ikinci okuyucusunu çalıştırdı (12'den 11'i tuttu, kaymış bir satır
-  düzeltildi) ve mimari sayfasını yazdı. 14 noktalık başvuru listesine karşı
-  10'unu kapsadı (önceki skill koşusu 5.5): görünüm başına seçimler, çapa ve
-  baş, rope ve küresel düzenleyici durumu artık bulunmuştu. Yalnızca
-  belgeleri olan bir okuyucu 8'den 5.5'ini yanıtladı (önceden 4.5; diğer
-  kollar 3 ve 2). Kör bir okuyucu cümlelerinin 20'den 17'sini ve ikinci
-  okuyuculu ama skill'siz kolun 20'den 20'sini tuttu; üç kaçırma, atıf
-  yapılan satırı hücrenin yalnızca bir kısmını içeren tablo hücreleriydi.
-  Koda erişimi olmayan bir okuyucu için daha geniş ve daha yararlı; tablolarında
-  henüz o kadar doğru değil.
-- **Denetim listesinde tablo satırları ağırlıklandırılmış ikinci bir 0.5
-  koşusu**: ikinci okuyucu üç tablo hücresi yakaladı ve düzeltildiler, yine
-  de kör okuyucu yine 20'den 17'sini tuttu (skill olmayan kol yine 20).
-  Üçten ikisi sahip olunan tipin kendi alanına atıf yapan "sahibi" hücreleriydi:
-  mimari şablonunun sahiplik sütunu, atfının taşıyamayacağı bir iddiaya davet
+  neyi yazdığı söylenmeyen kör bir okuyucu becerinin kolundan atıflı 20
+  cümlenin 19'unu, diğerinden 20'nin 16'sını tuttu; becerinin kolu hiç yanlış
+  iddiada bulunmadı, diğeri bir kez. Ama beceri olmayan kol koddan yazılmış
+  bir referans listesinin 12 noktasının hepsini kapsadı (becerinin kolu 10)
+  ve daha çok risk buldu. Burada beceri yazılanı daha doğru yaptı, anlaşılanı
+  daha geniş değil; doğruluğun geldiği yer, teslimden önce çalıştırılan kendi
+  ikinci okuyucusuydu (ilk taslağı 12'nin 6'sını tuttu). Bir depo, bir
+  örneklem: genel olarak becerinin bir ölçümü değil, bir hipotez. Becerisiz
+  ama teslimden önce cümlelerinin on ikisini bir ikinci okuyucuya
+  denetletmesi söylenen üçüncü bir kol, yeni bir kör örneklemde becerinin
+  17'sine karşı 20'nin 16'sını tuttu ve 12 noktanın hepsini kapsadı. Bütünüyle
+  okunabilecek kadar küçük bir depoda becerinin ölçülebilir kazancı o tek
+  adımdı; ölçme yarısı orada sınanmadı. Aynı belgeler iki örneklemde 19 ve 17
+  aldı: iki üç farklar gürültünün içindedir.
+- **Aynı üç kol büyük bir depoda** (Rust, yaklaşık 108k satır, mimari belgesi
+  tüm geçmişten çıkarılmış). Üçü de kaynağın %2'sinden azını okudu ve aynı
+  yolu yürüdü (tuş, komut, düzenleme). Kör bir okuyucu becerinin kolundan
+  20'nin 18'ini, düz koldan 15'ini ve ikinci okuyuculu koldan 20'sini tuttu;
+  hiçbiri yanlış iddiada bulunmadı. Çıkarılmış belgeden yazılmış 14 noktalık
+  bir listeye karşı 5.5, 6 ve 4.5 kapsadılar. Hiçbiri belgenin adlandırdığı
+  tasarım fikirlerini (işlevsel çekirdek, görünüm başına seçimler, bölme başına
+  bir görünüm) bulmadı. Yani büyük bir depoda da ölçme yarısı haritayı
+  genişletmedi ve ikinci okuyucu çalıştıran kol en doğrusuydu. Becerinin kolu
+  o sefer kendi ikinci okuyucusunu atladı; ikinci okuyuculu kol başka bir
+  kolun özdeş kopyasını okudu; belgenin eski bir sürümü geçmişte başka bir yol
+  altında hayatta kalmıştı. Bunların hiçbiri beceriden yana değil. Hep birlikte:
+  iki kez kazanç göstermiş tek adım teslimden önceki ikinci okuyucudur.
+- Bir sonda yazıldı (kurum içi yapıt adları → kullanıcıları, 40 kenar, öz-test
+  6/6). Sondaların zahmetine değip değmediği hâlâ bir hipotez.
+- **Yalnız belgeleri olan bir okuyucu** (kod yok) o büyük depo hakkında aynı
+  sekiz soruyu yanıtladı: becerinin belgelerinden 8'in 4.5'ini, diğer iki
+  koldan 3 ve 2'sini. Farkın bir kısmı yazılı sayfalardan değil, üretilmiş
+  fonksiyon iskeletinden geldi; bir ayrıntı okuyucuyu bir neden konusunda
+  yanılttı; ve hiçbir kol görünüm başına durumun nerede yaşadığını söylemedi.
+  Mimari sayfası ve "raporları saklayın" kuralı ondan gelir. Koda erişimle üç
+  okuyucu da sekizinin hepsini yanıtladı: o test tavanındaydı.
+- **Aynı büyük depoda sürüm 0.5** (yeni kopya, bir koşu): oturum kendi ikinci
+  okuyucusunu çalıştırdı (12'nin 11'i tuttu, kaymış bir satır düzeltildi) ve
+  mimari sayfasını yazdı. 14 noktalık referans listesine karşı 10 kapsadı
+  (önceki beceri koşusu 5.5): görünüm başına seçimler, anchor ve head, rope ve
+  global editör durumu artık bulunmuştu. Yalnız belgeleri olan bir okuyucu
+  8'in 5.5'ini yanıtladı (önce 4.5; diğer kollar 3 ve 2). Kör bir okuyucu
+  cümlelerinin 20'nin 17'sini ve ikinci okuyuculu ama becerisiz kolun 20'nin
+  20'sini tuttu; üç kaçırma, atıf yapılan satırı hücrenin yalnız bir kısmını
+  tutan tablo hücreleriydi. Koda erişimi olmayan bir okuyucu için daha geniş
+  ve daha yararlı; tablolarında henüz o kadar doğru değil.
+- **0.5'in ikinci koşusu, kontrol listesinde tablo satırları ağırlıklı**:
+  ikinci okuyucu üç tablo hücresini yakaladı ve düzeltildiler, yine de kör
+  okuyucu yine 20'nin 17'sini tuttu (beceri olmayan kol yine 20). Üçünden
+  ikisi sahip olunan türün kendi alanına atıf yapan "sahibi" hücreleriydi:
+  mimari şablonunun sahiplik sütunu, atfının taşıyamayacağı bir iddiayı davet
   ediyordu. Şablon artık o hücre için sahibin alanına atıf yapıyor.
-- **Sahiplik tablosu her sahibin alanına atıf yapan üçüncü bir koşu**: kör
-  bir okuyucu skill'in belgelerinden 20'den 19'unu ve skill olmayan koldan
-  20'den 19'unu tuttu; hiçbir sahiplik hücresi hatalı bulunmadı. Kapsam
-  14'ten 8.5 ve yalnızca belgeli okuyucu 8'den 4.5 idi — 0.5'in üç koşusu
-  boyunca bunlar aşağı kaydı (10, 9.5, 8.5; 5.5, 5, 4.5), çünkü her koşu
-  yazmak için farklı bir modül seçti. Üç örneklem bir eğilimi gürültüden
-  ayıramaz.
-- **Toplam beş 0.5 koşusu.** Kör doğruluk 20'den 17, 17, 19, 19, 18 (skill
-  olmayan kol, aynı listeler: 20, 20, 19, 18, 20); kapsam 14'ten 10, 9.5,
-  8.5, 7.5, 10; yalnızca belgeli okuyucu 8'den 5.5, 5, 4.5, 4, 5. Üçüncü
+- **Üçüncü bir koşu, sahiplik tablosu her sahibin alanına atıf yaparak**:
+  kör bir okuyucu becerinin belgelerinden 20'nin 19'unu ve beceri olmayan
+  koldan 20'nin 19'unu tuttu; hiçbir sahiplik hücresi hatalı bulunmadı.
+  Kapsam 14'ün 8.5'iydi ve yalnız belgeli okuyucu 8'in 4.5'i — 0.5'in üç
+  koşusu boyunca bunlar aşağı kaydı (10, 9.5, 8.5; 5.5, 5, 4.5), çünkü her
+  koşu yazmak için farklı bir modül seçti. Üç örneklem bir eğilimi gürültüden ayıramaz.
+- **Toplam beş 0.5 koşusu.** Kör doğruluk 20'nin 17, 17, 19, 19, 18'i (beceri
+  olmayan kol, aynı listeler: 20, 20, 19, 18, 20); kapsam 14'ün 10, 9.5,
+  8.5, 7.5, 10'u; yalnız belgeli okuyucu 8'in 5.5, 5, 4.5, 4, 5'i. Üçüncü
   koşudan sonraki düşüş gürültüydü: beşincisi 10'a geri döndü. Bir koşu
-  kapsamda yaklaşık artı eksi 1.5 değerindedir; bir değişikliği birkaç
-  koşuya bakarak yargılayın.
+  kapsamda yaklaşık artı eksi 1.5 değerindedir; bir değişikliği birkaç koşu
+  üzerinden değerlendirin.
 - **0.6 (paket bildirimleri, bir değerin nasıl yapıldığı, giren bağ sayısı ×
-  satır ile modül seçimi)**, büyük depoda üç koşu: kapsam 14'ten 11.5, 12.5,
-  10.5 (0.5: 9.1); yalnızca bir paket bildirimi özelliğinde görünen uçbirim
-  bağı üçten ikisinde bulundu; ana düzenleme arayüzü üçünde de adlandırıldı.
-  Kör doğruluk 20'den 19, 19, 18 (skill olmayan kol 19, 19, 20).
+  satırlarla modül seçimi)**, büyük depoda üç koşu: kapsam 14'ün 11.5, 12.5,
+  10.5'i (0.5: 9.1); yalnız bir paket bildirimi özelliğinde görünen terminal
+  bağı üçün ikisinde bulundu; ana düzenleme arayüzü üçünde de adlandırıldı.
+  Kör doğruluk 20'nin 19, 19, 18'i (beceri olmayan kol 19, 19, 20).
 - **İkinci bir dil** (bir Go paketleyicisi (bundler), ~139k satır): çekirdek
   önce 2 çözülmüş kenar çizdi, çünkü Go importları bir paketi modül yoluyla
-  adlandırır; go.mod üzerinden çözümleme 193 verdi. Yalnızca giren bağ
-  sayısıyla modül seçiminde koşu bir günlükleme yardımcısını yazdı ve 14
-  noktadan 2'sini kapsadı (skill olmayan kol 3); satırlarla
-  ağırlıklandırılınca ayrıştırıcıyı seçti ve 7'sini kapsadı.
+  adlandırır; go.mod üzerinden çözümleme 193 verdi. Yalnız giren bağ sayısıyla
+  modül seçiminde koşu bir günlükleme yardımcısını yazdı ve 14 noktanın 2'sini
+  kapsadı (beceri olmayan kol 3); satırlarla ağırlıklandırınca ayrıştırıcıyı
+  seçti ve 7 kapsadı.
+- **Düzeltilmiş seçimle Go deposunda üç koşu**: kapsam 14'ün 7, 8.5 ve 5.5'i
+  (becerisiz iki koşu: 3 ve 1); kör doğruluk, beceri olmayan kolun 19, 19 ve
+  19'una karşı 20'nin 16, 20 ve 20'si. İmza ve ölçülmüş sayı kurallarından
+  sonraki iki koşu 20'nin 20'sini tuttu.
+- **Tek ad alanlı bir C# deposunda ad kenarları**: modüller arası örneklenen
+  20 `[H]` kullanımın 19'u gerçek tür kullanımıydı ve 1'i bir belge yorumunda
+  duruyordu; yorumlar artık taranmıyor. Aynı depoda **ORM tabloları**: önce 0,
+  EF Core `DbSet` bildirimleri okununca 30. **İlk gerçek sonda** (DI
+  kayıtları) oradaki boşluğunu boş buldu: 11 arayüzün hepsi gerçeklemeleriyle
+  aynı dosyada yaşıyordu.

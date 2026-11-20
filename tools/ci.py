@@ -31,6 +31,7 @@ def gates(root):
           ("ortak araclar", [PY, "tools/check_shared_tools.py"]),
           ("EN sayfa esligi", [PY, "tools/sync_en_docs.py", "--check"]),
           ("dil esligi", [PY, "tools/check_lang_parity.py"]),
+          ("TR tazeligi", [PY, "tools/check_tr_fresh.py"]),
           ("satir ve dosya butcesi", [PY, "tools/ci.py", "--budget"])]
     terms = os.environ.get("RONTGEN_FORBIDDEN_TERMS") or (".forbidden-terms" if os.path.exists(os.path.join(root, ".forbidden-terms")) else None)
     if terms:
@@ -70,10 +71,11 @@ def can_fail():
         "ortak araclar": ("tools/rule_hits.py", "\n", "\n# kopya bozuldu\n"),
         "EN sayfa esligi": ("docs/en/methodology.md", "\n", "\nelle eklenmis satir\n"),
         "dil esligi": ("docs/_config.yml", '/tr/kanit" }', '/tr/kanit-yok" }'),
+        "TR tazeligi": ("skill/rontgen/references/okuma.md", "\n", "\nkaynak degisti, ceviri eskidi\n"),
     }
     if os.path.exists(os.path.join(ROOT, ".forbidden-terms")):
         first = io.open(os.path.join(ROOT, ".forbidden-terms"), encoding="utf-8").readline().strip()
-        breaks["sizinti"] = (s, "## Red lines", f"## Red lines\n\n{first}")
+        breaks["sizinti"] = ("skill/rontgen/scripts/belge.py", "import argparse", f"import argparse  # {first}")   # no TR page
     ok = True
     for gate, (rel, a, b) in breaks.items():
         with tempfile.TemporaryDirectory() as d:

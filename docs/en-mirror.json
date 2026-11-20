@@ -48,6 +48,14 @@
       "sources": [
         "skill/rontgen/references/kanit.md"
       ]
+    },
+    {
+      "out": "custom-language.md",
+      "title": "Step 1 — a language of the project's own",
+      "tr": "docs/tr/ozel-dil.md",
+      "sources": [
+        "skill/rontgen/references/ozel-dil.md"
+      ]
     }
   ]
 }
