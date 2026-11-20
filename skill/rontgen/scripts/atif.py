@@ -212,11 +212,18 @@ def changed_since(repo: str, commit: str, paths):
     return out
 
 
-def tracked_files(repo: str):
-    """Git's tracked files; without git, the files of a directory walk (build and hidden directories not entered)."""
+def worktree(side: str) -> bool:
+    """The ledger says the reading was done on a working tree with changes: '# commit: <sha> +agac'."""
+    with io.open(side, encoding="utf-8") as f:
+        return any(re.match(r"#\s*commit:\s*\S+\s+\+agac", line) for line in f)
+
+
+def tracked_files(repo: str, untracked: bool = False):
+    """Git's tracked files (and, for a working-tree ledger, untracked ones git does not ignore); without git, a directory walk."""
     if not has_git(repo):
         return list_files(repo)[0]
-    r = subprocess.run(["git", "-C", repo, "-c", "core.quotepath=off", "ls-files"], capture_output=True)
+    r = subprocess.run(["git", "-C", repo, "-c", "core.quotepath=off", "ls-files"] + (["--cached", "--others", "--exclude-standard"]
+                       if untracked else []), capture_output=True)
     return r.stdout.decode("utf-8", "replace").splitlines() if r.returncode == 0 else []
 
 
@@ -287,7 +294,7 @@ def run(repo: str, docs: str, strict: bool, verbose: bool, out=sys.stdout) -> in
             say(f"KAYIK    {path}:{line_no}  \"{anchor}\" dosyada hic yok: kod degisti, cumleyi yeniden oku"); bad += 1; gone += 1
 
     cites = doc_citations(docs)
-    loose, range_only, ambiguous, rests_on = classify(cites, rows, tracked_files(repo))
+    loose, range_only, ambiguous, rests_on = classify(cites, rows, tracked_files(repo, untracked=worktree(side)))
     if verbose:
         for label, group in (("CAPASIZ ", loose), ("ARALIK  ", range_only), ("BELIRSIZ", ambiguous)):
             for doc, n, name, start, end, _ in group:
@@ -296,6 +303,8 @@ def run(repo: str, docs: str, strict: bool, verbose: bool, out=sys.stdout) -> in
     changed = None
     if not git:
         pass                                  # said at the top: no commit to compare with
+    elif worktree(side):
+        say("olculmedi: capalar calisma agacina bagli (+agac); commit'e gore DEGISTI / BAYAT olculmez, KAYIK denetimi yapildi")
     elif commit:
         changed = changed_since(repo, commit, [p for p, _, _ in rows])
         if changed is None:
@@ -326,16 +335,19 @@ def capala(repo: str, docs: str, out=sys.stdout) -> int:
     side = os.path.join(docs, SIDECAR)
     if not os.path.exists(side):            # three runs stopped here: create it, tied to HEAD (or to no commit)
         sha = subprocess.run(["git", "-C", repo, "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip() if git else NO_COMMIT
+        dirty = git and bool(subprocess.run(["git", "-C", repo, "status", "--porcelain"], capture_output=True, text=True).stdout.strip())
         with io.open(side, "w", encoding="utf-8", newline="\n") as f:
-            f.write(f"# commit: {sha}\n")
-        say(f"{SIDECAR} yoktu: olusturuldu, capalar {sha[:8]} surumune baglandi (okuma bu surumde yapildi varsayildi).")
+            f.write(f"# commit: {sha}{' +agac' if dirty else ''}\n")
+        say(f"{SIDECAR} yoktu: olusturuldu, capalar {sha[:8]} surumune baglandi" + (" + calisma agaci (degisen ve izlenmeyen dosyalar da"
+            " capalanir; DEGISTI/BAYAT olculmez)." if dirty else " (okuma bu surumde yapildi varsayildi)."))
     if not git:
         say(NO_GIT)
     commit, rows, errors = load_sidecar(side)
     if errors or (git and not commit):
         say("olculmedi: " + ("; ".join(errors) if errors else "yan dosyada '# commit:' yok; hangi surume capalanacagi bilinmiyor"))
         return 2
-    tracked = tracked_files(repo)
+    wt = worktree(side)
+    tracked = tracked_files(repo, untracked=wt)
     have = {(p, n) for p, n, _ in rows}
     wanted = {}
     for doc, _, name, start, end, _ in doc_citations(docs):
@@ -345,7 +357,7 @@ def capala(repo: str, docs: str, out=sys.stdout) -> int:
                 continue
             wanted.setdefault((name, line_no), cands)
     added, cache, refused = [], {}, 0
-    moved = set(changed_since(repo, commit, {c[0] for c in wanted.values() if len(c) == 1}) or []) if git else set()
+    moved = set(changed_since(repo, commit, {c[0] for c in wanted.values() if len(c) == 1}) or []) if git and not wt else set()
     for (name, line_no), cands in sorted(wanted.items()):
         if len(cands) != 1:
             say(f"BELIRSIZ {name}:{line_no}  {'eslesen dosya yok' if not cands else str(len(cands)) + ' dosya eslesiyor'}: capalanmadi"); refused += 1
@@ -376,35 +388,8 @@ def capala(repo: str, docs: str, out=sys.stdout) -> int:
     return 0
 
 
-def ornek(docs: str, n: int, seed: int, out=sys.stdout) -> int:
-    cites = doc_citations(docs)
-    seen, rows = set(), []
-    for doc, line, *_rest, sentence in cites:
-        if (doc, line) not in seen:
-            seen.add((doc, line)); rows.append((doc, line, sentence))
-    if not rows:
-        print("olculmedi: belgelerde atifli cumle yok", file=out)
-        return 2
-    rnd = random.Random(seed)   # tables get >= 1/3: once, every faulted sentence was a cell saying more than its line
-    tab = [r for r in rows if r[2].lstrip().startswith("|")]
-    txt = [r for r in rows if not r[2].lstrip().startswith("|")]
-    rnd.shuffle(tab); rnd.shuffle(txt)
-    nt = min(len(tab), max(-(-n // 3), round(n * len(tab) / len(rows))))
-    picked = tab[:nt] + txt[:n - nt]
-    picked = sorted(picked + tab[nt:nt + n - len(picked)])
-    np_ = sum(r[2].lstrip().startswith("|") for r in picked)
-    print(f"{ORNEK_HEAD} — {len(picked)} / {len(rows)} atifli cumle (tohum {seed}; {np_} tablo satiri)\n\n"
-          "Bu listeyi belgeleri YAZMAYAN biri (ya da yazarin notlarini gormeyen taze bir oturum) doldurur. Her cumle icin\n"
-          "atif yapilan satiri acin ve cumlenin o satirdan cikip cikmadigina bakin: satirin orada olmasi yetmez.\n"
-          "Tablo satirinda her hucre bir iddiadir: atif yapilan satir ya da aralik hucrenin hepsini gostermiyorsa sonuc\n"
-          "`satirdan cikmiyor`.\n"
-          "Sonuc: `tuttu` / `tutmadi` / `satirdan cikmiyor` ve bir cumle gerekce. Oran belgenin kapsam beyanina yazilir.\n", file=out)
-    for doc, line, sentence in picked:
-        print(f"- [ ] `{doc}:{line}` — {sentence[:700]}" + (" …" if len(sentence) > 700 else "") + "\n      sonuc: ", file=out)
-    return 0
-
-
 def self_test() -> int:
+    from atif_ornek import ornek
     ok = []
 
     def check(name, cond):
@@ -564,6 +549,17 @@ def self_test() -> int:
         items = [x for x in buf.getvalue().splitlines() if x.startswith("- [ ]")]
         check("ornek: tablo satirlari orneklemin en az ucte birini alir (varsa)",
               len(items) == 6 and sum("| X |" in x or "| Y |" in x for x in items) == 2 and "2 tablo satiri" in buf.getvalue())
+    with tempfile.TemporaryDirectory() as d:          # a working tree with changes: two runs left such citations unanchored
+        g = ["git", "-C", d, "-c", "user.email=a@b", "-c", "user.name=t"]
+        subprocess.run(["git", "init", "-q", d]); io.open(os.path.join(d, "a.c"), "w").write("int a = 1;\n")
+        subprocess.run(g + ["add", "-A"]); subprocess.run(g + ["commit", "-qm", "x"], capture_output=True)
+        io.open(os.path.join(d, "a.c"), "w").write("int a = 2;\n"); io.open(os.path.join(d, "yeni.c"), "w").write("int yeni = 3;\n")
+        os.makedirs(os.path.join(d, "o")); io.open(os.path.join(d, "o", "n.md"), "w").write("A `a.c:1`, Y `yeni.c:1`.\n")
+        b1, b2 = io.StringIO(), io.StringIO()
+        capala(d, os.path.join(d, "o"), b1); run(d, os.path.join(d, "o"), False, False, b2)
+        check("calisma agaci: degisen ve izlenmeyen dosya capalanir, DEGISTI yerine 'olculmedi' der",
+              "2 capa yazildi" in b1.getvalue() and "+agac" in io.open(os.path.join(d, "o", SIDECAR)).read()
+              and "calisma agacina bagli" in b2.getvalue() and "DEGISTI  a.c" not in b2.getvalue() and "2 yerinde" in b2.getvalue())
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 
@@ -591,6 +587,7 @@ def main() -> int:
     if a.capala:
         return capala(a.repo, a.docs)
     if a.ornek:
+        from atif_ornek import ornek
         return ornek(a.docs, a.ornek, a.seed)
     return run(a.repo, a.docs, a.strict, a.verbose)
 
