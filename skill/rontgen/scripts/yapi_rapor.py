@@ -12,6 +12,8 @@ import json
 import os
 import re
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 import c_dili
 from ortak import excluded_lines, thresholds_line
 

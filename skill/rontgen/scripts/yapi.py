@@ -51,6 +51,7 @@ import sys
 import tempfile
 from collections import Counter, defaultdict
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
 import dil  # noqa: E402
 from sonda import kor_noktalar, load_probes, probe_ends

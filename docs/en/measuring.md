@@ -17,8 +17,8 @@ runs taught.
 
 ### Running and configuring
 
-Run them as plain `python scripts/<name>.py` from anywhere; they import each
-other, so `python -I` fails. If you may not write to the repository, keep
+Run them as `python scripts/<name>.py` from anywhere, with or without
+`python -I`; each finds its sibling modules by its own path. If you may not write to the repository, keep
 `rontgen.config.json` and any probes in the output folder and pass
 `--config` to `rontgen.py`, `yapi.py` and `belge.py`; `probe_results` are looked up next
 to the config file first, then from the repository root. `atif.py` and

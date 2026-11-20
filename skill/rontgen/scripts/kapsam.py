@@ -62,6 +62,7 @@ import os
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 import dil
 
 READ_SHARE = 0.6

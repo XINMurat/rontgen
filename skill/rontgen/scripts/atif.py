@@ -79,6 +79,7 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 from ortak import has_git, list_files
 
 NO_GIT = ("commit'siz capa: git yok. Capalar calisma agacindaki dosyaya bagli; dosyanin capadan sonra degisip "
@@ -368,6 +369,7 @@ def capala(repo: str, docs: str, out=sys.stdout) -> int:
             continue
         lines = read_lines(repo, path, cache)
         anchor = pick_anchor(lines[line_no - 1]) if lines and 1 <= line_no <= len(lines) else None
+        anchor = anchor or (lines[line_no - 1].strip() if lines and 1 <= line_no <= len(lines) else None)   # `}` ends a range too
         if not anchor:
             near = next((k for k in range(min(line_no, len(lines or [])), max(0, line_no - 10), -1) if pick_anchor(lines[k - 1])), None)
             say(f"REDDEDILDI {path}:{line_no}  satir bos ya da dosya disinda: capa cikarilamadi"
@@ -553,13 +555,13 @@ def self_test() -> int:
         g = ["git", "-C", d, "-c", "user.email=a@b", "-c", "user.name=t"]
         subprocess.run(["git", "init", "-q", d]); io.open(os.path.join(d, "a.c"), "w").write("int a = 1;\n")
         subprocess.run(g + ["add", "-A"]); subprocess.run(g + ["commit", "-qm", "x"], capture_output=True)
-        io.open(os.path.join(d, "a.c"), "w").write("int a = 2;\n"); io.open(os.path.join(d, "yeni.c"), "w").write("int yeni = 3;\n")
-        os.makedirs(os.path.join(d, "o")); io.open(os.path.join(d, "o", "n.md"), "w").write("A `a.c:1`, Y `yeni.c:1`.\n")
+        io.open(os.path.join(d, "a.c"), "w").write("int a = 2;\n}\n"); io.open(os.path.join(d, "yeni.c"), "w").write("int yeni = 3;\n")
+        os.makedirs(os.path.join(d, "o")); io.open(os.path.join(d, "o", "n.md"), "w").write("A `a.c:1-2`, Y `yeni.c:1`.\n")
         b1, b2 = io.StringIO(), io.StringIO()
         capala(d, os.path.join(d, "o"), b1); run(d, os.path.join(d, "o"), False, False, b2)
-        check("calisma agaci: degisen ve izlenmeyen dosya capalanir, DEGISTI yerine 'olculmedi' der",
-              "2 capa yazildi" in b1.getvalue() and "+agac" in io.open(os.path.join(d, "o", SIDECAR)).read()
-              and "calisma agacina bagli" in b2.getvalue() and "DEGISTI  a.c" not in b2.getvalue() and "2 yerinde" in b2.getvalue())
+        check("calisma agaci: degisen ve izlenmeyen dosya (ve `}` aralik sonu) capalanir, DEGISTI yerine 'olculmedi' der",
+              "3 capa yazildi" in b1.getvalue() and "+agac" in io.open(os.path.join(d, "o", SIDECAR)).read()
+              and "calisma agacina bagli" in b2.getvalue() and "DEGISTI  a.c" not in b2.getvalue() and "3 yerinde" in b2.getvalue())
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 

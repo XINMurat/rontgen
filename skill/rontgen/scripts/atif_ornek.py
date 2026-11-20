@@ -10,6 +10,8 @@ from __future__ import annotations
 import random
 import sys
 
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 from atif import ORNEK_HEAD, doc_citations
 
 

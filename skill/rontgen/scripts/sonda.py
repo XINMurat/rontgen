@@ -57,6 +57,8 @@ import json
 import os
 import re
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 from ortak import exclusion
 
 BLIND = {

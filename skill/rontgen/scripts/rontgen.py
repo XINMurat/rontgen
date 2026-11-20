@@ -64,6 +64,7 @@ import tempfile
 from collections import Counter, defaultdict
 from itertools import combinations
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 from ortak import excluded_lines, source_map, ext, git, has_history, is_test, load_config, read_sources, thresholds_line
 import dil  # noqa: E402
 

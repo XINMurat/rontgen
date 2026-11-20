@@ -52,6 +52,8 @@ import os
 import re
 import subprocess
 
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 import ozel_dil  # noqa: E402
 from collections import Counter, defaultdict
 
