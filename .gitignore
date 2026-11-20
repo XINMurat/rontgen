@@ -4,3 +4,4 @@ __pycache__/
 # plan/ ozeldir: yasak terimler ve yerel yollar icerir, depoya girmez
 /plan/
 .forbidden-terms
+.leak-salt

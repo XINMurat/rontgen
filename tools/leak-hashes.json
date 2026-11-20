@@ -1,0 +1,22 @@
+{
+  "_note": "HMAC-SHA256(salt, lowercased term); the salt is the CI secret RONTGEN_LEAK_SALT, never committed.",
+  "lengths": [
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11
+  ],
+  "digests": [
+    "0c46f8b0f80c558f111a3cc74002b1fe5683a05ef4f60fc91280e44a45d64c48",
+    "24a8d2dc3d877369f79f98602726300f142fde6adad186d280d976864da2a8f8",
+    "4df27300708e99e23a327ee2d87c32430f47041067b80cc3093f009dc4f3b438",
+    "68558777695f7c8c42bf256a7600dce3f75bc286a80026254ef4fd5141088aab",
+    "9277228ee1005a6e0457185b70bb0398f2a3d3df599989f8ef83e46ee237180b",
+    "d5cdf37962fc94a668b81cf049f4045fd167c4242b3b3b882df0522ad3ddfe20",
+    "d5ed28e53c2dcd83ee8b4106d4c6963e9880485cd904adb4fad10c6dde7c23ff",
+    "ef3e22021ef7b6b1e61c606c5dce66a1a0fc04622293a59da6a57406853c54d7"
+  ]
+}

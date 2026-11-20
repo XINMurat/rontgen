@@ -32,7 +32,8 @@ def gates(root):
           ("EN sayfa esligi", [PY, "tools/sync_en_docs.py", "--check"]),
           ("dil esligi", [PY, "tools/check_lang_parity.py"]),
           ("TR tazeligi", [PY, "tools/check_tr_fresh.py"]),
-          ("satir ve dosya butcesi", [PY, "tools/ci.py", "--budget"])]
+          ("satir ve dosya butcesi", [PY, "tools/ci.py", "--budget"]),
+          ("sizinti ozet", [PY, "tools/leak_hash.py"])]   # salted digests: the CI secret is a salt, never the terms
     terms = os.environ.get("RONTGEN_FORBIDDEN_TERMS") or (".forbidden-terms" if os.path.exists(os.path.join(root, ".forbidden-terms")) else None)
     if terms:
         g.append(("sizinti", [PY, "tools/leak_check.py", "--terms", terms, "--package", "rontgen.skill", "--require"]))
@@ -49,9 +50,9 @@ def budget(root):
     return 1 if bad else 0
 
 
-def run(root, quiet=False):
+def run(root, quiet=False, env=None):
     for name, cmd in gates(root):
-        r = subprocess.run(cmd, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace")
+        r = subprocess.run(cmd, cwd=root, capture_output=True, text=True, encoding="utf-8", errors="replace", env=env)
         if r.returncode != 0:
             if not quiet:
                 print(f"KIRMIZI  {name}\n{(r.stdout + r.stderr)[-800:]}")
@@ -76,6 +77,9 @@ def can_fail():
     if os.path.exists(os.path.join(ROOT, ".forbidden-terms")):
         first = io.open(os.path.join(ROOT, ".forbidden-terms"), encoding="utf-8").readline().strip()
         breaks["sizinti"] = ("skill/rontgen/scripts/belge.py", "import argparse", f"import argparse  # {first}")   # no TR page
+        breaks["sizinti ozet"] = breaks["sizinti"]
+    salt_file = os.path.join(ROOT, ".leak-salt")
+    salt = io.open(salt_file, encoding="utf-8").read().strip() if os.path.exists(salt_file) else None
     ok = True
     for gate, (rel, a, b) in breaks.items():
         with tempfile.TemporaryDirectory() as d:
@@ -88,7 +92,13 @@ def can_fail():
             if gate not in ("paket esligi", "EN sayfa esligi"):   # derived files in step: only the gate under test goes red
                 for c in (["tools/build_skill.py"], ["tools/sync_en_docs.py"]):
                     subprocess.run([PY] + c, cwd=dst, capture_output=True)
-            red = run(dst, quiet=True)
+            env = dict(os.environ)
+            env.pop("RONTGEN_LEAK_SALT", None)
+            if gate == "sizinti ozet":               # only the salted gate sees the term: the clear-text list is not in the copy
+                if not salt:
+                    continue
+                os.remove(os.path.join(dst, ".forbidden-terms")); env["RONTGEN_LEAK_SALT"] = salt
+            red = run(dst, quiet=True, env=env)
             good = red == gate
             ok &= good
             print(f"{'ok  ' if good else 'FAIL'} {gate}: bozulunca {'bu kapi' if good else red or 'hicbir kapi'} kirmizi")
