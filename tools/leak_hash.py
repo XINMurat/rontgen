@@ -43,7 +43,7 @@ def mac(salt: str, word: str) -> str:
 
 
 def terms_of(path):
-    """Terms as plain words: a regex-ish line like `C:.TRAE` yields its alphanumeric runs (`trae`), 3+ chars."""
+    """Terms as plain words: a regex-ish line like `C:.YEREL` yields its alphanumeric runs (`yerel`), 3+ chars."""
     out = set()
     for line in io.open(path, encoding="utf-8"):
         out |= {w.lower() for w in RUN.findall(line) if len(w) >= 3 and w.lower() not in ("c",)}
