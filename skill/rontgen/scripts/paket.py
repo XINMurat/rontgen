@@ -193,6 +193,39 @@ def parser_for(path):
     return None
 
 
+
+FEED = re.compile(r'<add\s+key="([^"]+)"\s+value="([^"]+)"', re.I)
+ABS = re.compile(r"(?<![\w])([A-Za-z]:[\\/](?:[^\s\"'`<>|*?]+)|/(?:home|opt|srv|mnt|Users)/[^\s\"'`<>|*?]+)")
+TEXT_EXT = (".py", ".cs", ".ts", ".js", ".ps1", ".sh", ".bat", ".cmd", ".json", ".yaml", ".yml", ".toml", ".csproj", ".props",
+            ".targets", ".config", ".go", ".rs", ".java")
+
+
+def outside(repo: str, paths) -> dict:
+    """Ties to other repositories that no manifest dependency shows (two runs found them only by grep):
+    local package feeds (nuget.config) and absolute paths in code and build files pointing outside the repository."""
+    feeds, absolute = [], {}
+    root = os.path.abspath(repo).replace("\\", "/").lower()
+    for rel in paths:
+        if not rel.lower().endswith(TEXT_EXT) or "node_modules/" in rel:
+            continue
+        try:
+            with io.open(os.path.join(repo, rel), encoding="utf-8", errors="replace") as f:
+                lines = f.read().splitlines()
+        except OSError:
+            continue
+        for n, line in enumerate(lines, 1):
+            if rel.lower().endswith("nuget.config"):
+                feeds += [{"at": f"{rel}:{n}", "key": k, "source": v} for k, v in FEED.findall(line) if "://" not in v]
+                continue                                    # a feed is reported as a feed, not twice
+            for a in ABS.findall(line):
+                norm = re.sub(r"[\\/]+", "/", a).rstrip("/.,;:)")      # C:\\X and C://X are C:/X
+                if norm.lower().startswith(root) or len(norm) < 4:
+                    continue
+                top = "/".join(norm.split("/")[:3])
+                absolute.setdefault(top, []).append(f"{rel}:{n}")
+    return {"local_feeds": feeds, "absolute_paths": {k: v for k, v in sorted(absolute.items())}}
+
+
 def collect(repo: str):
     paths = [p for p in list_files(repo)[0] if NAMES.search(p) and "node_modules/" not in p]
     pkgs, errors = [], []
@@ -217,7 +250,7 @@ def collect(repo: str):
                 d["feature"] = ", ".join(sorted(f for f, ms in x["features"].items() if d["name"] in ms)) or None
             elif d["name"] in gated and not d["feature"]:
                 d["feature"] = ", ".join(sorted(f for f, ms in x["features"].items() if d["name"] in ms))
-    return {"packages": pkgs, "errors": errors}
+    return {"packages": pkgs, "errors": errors, "outside": outside(repo, list_files(repo)[0])}
 
 
 def render(r, repo_name):
@@ -236,6 +269,13 @@ def render(r, repo_name):
                         for d in x["deps"] if d["kind"] == "optional" or d["feature"]})
         o.append(f"| `{x['name']}` `{x['path']}` | {x['ecosystem']} | {', '.join(internal) or '-'} | {ext} | "
                  f"{', '.join(devint) or '-'} | {', '.join(gated[:8]) + (' …' if len(gated) > 8 else '') or '-'} |")
+    out = r.get("outside") or {}
+    if out.get("local_feeds") or out.get("absolute_paths"):
+        o += ["", "## Depo disina baglar", "", "Hicbir paket bildiriminin gostermedigi baglar: yerel paket kaynaklari ve kodda depo disini "
+              "gosteren mutlak yollar. Baska bir makinede bunlar yoksa derleme ya da calistirma durur. `[K]` satir; bagin ne oldugu `[H]`.", ""]
+        o += [f"- Yerel paket kaynagi `{x['key']}` → `{x['source']}` (`{x['at']}`)" for x in out.get("local_feeds", [])]
+        o += [f"- `{k}` — {len(v)} yerde: " + ", ".join(f"`{a}`" for a in v[:6]) + (" …" if len(v) > 6 else "")
+              for k, v in out.get("absolute_paths", {}).items()]
     o += ["", "Okurken: bir katmanin **ozellige bagli** dis bagimliliklari, o katmanin neye bagli kalmamasi gerektigini ya da "
           "fiilen neye bagli oldugunu gosterir; **yalniz test** ic bagimliliklari kodda gorunmeyen katman iliskileridir. "
           "Ikisi de import'tan cikmaz.", ""]
@@ -291,6 +331,11 @@ def self_test() -> int:
         k = {x["name"]: x for x in by["k/build.gradle.kts"]["deps"]}
         check("gradle: project() ic, testImplementation dev", k["core"]["internal"] and k["junit:junit"]["kind"] == "dev")
         check("bozuk bildirim: hata satiri, cokmez", any("bad/Cargo.toml" in e for e in r["errors"]))
+        w("nuget.config", '<add key="yerel" value="C:/X/nuget-yerel" />\n<add key="org" value="https://api.nuget.org/v3/index.json" />')
+        w("tools/a.py", 'sys.path.insert(0, r"C:\\X\\Dac\\tools")\n')
+        o2 = outside(d, ["nuget.config", "tools/a.py"])
+        check("depo disi: yerel paket kaynagi ve mutlak yol, URL degil", [x["source"] for x in o2["local_feeds"]] == ["C:/X/nuget-yerel"]
+              and list(o2["absolute_paths"]) == ["C:/X/Dac"])
         md = render(r, "x")
         check("rapor: ozellige bagli ve yalniz test sutunlari", "termina (term)" in md and "| tui |" in md.replace("`", "")
               or ("tui" in md and "termina (term)" in md))
