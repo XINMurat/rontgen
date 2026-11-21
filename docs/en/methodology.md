@@ -207,6 +207,8 @@ a prediction.
 - **→ mizan**: anything the code *claims* that the reading made you doubt
   goes to a code audit. The written documents are a claim set too: the blind
   checklist is where Mizan picks them up.
+- **→ iskele, for debt**: refactor-or-rewrite is weighed in `references/borc.md`
+  and decided by the owner.
 - **→ kiyas**: a debt with no obvious way out is an ideation question.
 
 Re-run the core at each phase close and regenerate the diagrams rather than
@@ -240,6 +242,7 @@ changed (`BAYAT`): those are re-read, not patched.
 - `references/okuma.md` — step 4: navigation documents, order, vocabulary, anchors
 - `references/belgeler.md` — step 6: templates for every written document
 - `references/teslim.md` — step 6: citation forms that fail, delivery details
+- `references/borc.md` — when debt or refactor-or-rewrite is asked: one row per module, from the reports
 - `references/kanit.md` — the observations every rule comes from
 
 ### Status

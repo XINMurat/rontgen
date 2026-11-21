@@ -1,4 +1,4 @@
-> Kaynak: skill/rontgen/SKILL.md · sha256:13fbb43e26a2 — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
+> Kaynak: skill/rontgen/SKILL.md · sha256:f0dad34344de — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
 
 # Metodoloji — döngü
 
@@ -200,6 +200,8 @@ onu yeniden okumak bir tahmin değil, bir denetimdir.
 - **→ mizan**: kodun *iddia ettiği* ve okumanın sizi kuşkuya düşürdüğü her
   şey bir kod denetimine gider. Yazılan belgeler de bir iddia kümesidir: kör
   kontrol listesi Mizan'ın onları aldığı yerdir.
+- **→ iskele, borç için**: yeniden düzenle-mi-yeniden-yaz-mı `references/borc.md` içinde
+  tartılır ve sahibi karar verir.
 - **→ kiyas**: belirgin bir çıkış yolu olmayan bir borç bir fikir üretme sorusudur.
 
 Her evre kapanışında çekirdeği yeniden çalıştırın ve diyagramları
@@ -234,6 +236,7 @@ değişmiş dosyalara dayandığını bildirir (`BAYAT`): bunlar yamanmaz, yenid
 - `references/okuma.md` — adım 4: gezinme belgeleri, sıra, sözcük dağarcığı, çapalar
 - `references/belgeler.md` — adım 6: her yazılı belgenin şablonları
 - `references/teslim.md` — adım 6: düşen atıf biçimleri, teslim ayrıntıları
+- `references/borc.md` — borç ya da yeniden düzenle-mi-yeniden-yaz-mı sorulduğunda: raporlardan modül başına bir satır
 - `references/kanit.md` — her kuralın dayandığı gözlemler
 
 ## Durum

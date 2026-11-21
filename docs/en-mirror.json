@@ -56,6 +56,14 @@
       "sources": [
         "skill/rontgen/references/ozel-dil.md"
       ]
+    },
+    {
+      "out": "debt.md",
+      "title": "Debt and refactor-or-rewrite",
+      "tr": "docs/tr/borc.md",
+      "sources": [
+        "skill/rontgen/references/borc.md"
+      ]
     }
   ]
 }
