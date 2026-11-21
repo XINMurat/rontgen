@@ -21,6 +21,7 @@ nav_en:
   - { name: "Delivery", url: "/en/delivery.html" }
   - { name: "Own language", url: "/en/custom-language.html" }
   - { name: "Evidence", url: "/en/evidence.html" }
+  - { name: "Debt", url: "/en/debt.html" }
 nav_tr:
   - { name: "Genel bakış", url: "/" }
   - { name: "Hızlı başlangıç", url: "/QUICKSTART.html" }
@@ -31,6 +32,7 @@ nav_tr:
   - { name: "Teslim", url: "/tr/teslim.html" }
   - { name: "Özel dil", url: "/tr/ozel-dil.html" }
   - { name: "Kanıt", url: "/tr/kanit.html" }
+  - { name: "Borç", url: "/tr/borc.html" }
 pairs:
   - { en: "/en/methodology", tr: "/tr/metodoloji" }
   - { en: "/en/measuring", tr: "/tr/olcum" }
@@ -39,6 +41,7 @@ pairs:
   - { en: "/en/delivery", tr: "/tr/teslim" }
   - { en: "/en/custom-language", tr: "/tr/ozel-dil" }
   - { en: "/en/evidence", tr: "/tr/kanit" }
+  - { en: "/en/debt", tr: "/tr/borc" }
 
 defaults:
   - scope: { path: "" }
