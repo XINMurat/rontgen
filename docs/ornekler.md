@@ -18,9 +18,9 @@ counts and module and file names, never source code, and each project keeps its 
 | helix | Rust | 296 files | [open →](ornekler/helix.html) |
 | esbuild | Go | 196 files | [open →](ornekler/esbuild.html) |
 
-The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis, and carries three reading
-rounds: about 950 lines from `Main.lean` down to the Galois row and the proof of the window bound, six module notes (in
-Turkish), every sentence cited. A blind second reader held 11 of 12 for round 1; rounds 2 and 3 are not yet checked. It says nothing about whether the proof holds.
+The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis, and carries four reading
+rounds: about 1,060 lines from `Main.lean` down to the Galois row and the proof of the window bound, seven module notes (in
+Turkish), every sentence cited. A blind second reader held 11 of 12 for round 1; rounds 2 to 4 are not yet checked. It says nothing about whether the proof holds.
 
 The same output is made for any repository with `python scripts/pano.py --docs rontgen-out --repo .` after `yapi.py`
 (and `rontgen.py`, for hotspots). [Back to the overview](./)
@@ -40,9 +40,9 @@ modül ve dosya adları taşırlar, kaynak kod asla; her proje kendi lisansını
 | helix | Rust | 296 dosya | [aç →](ornekler/helix.html#tr) |
 | esbuild | Go | 196 dosya | [aç →](ornekler/esbuild.html#tr) |
 
-Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar ve üç okuma turunu taşır:
-`Main.lean`'den Galois satırına ve pencere sınırının kanıtına inen yaklaşık 950 satır, altı modül notu, her cümle atıflı. Kör ikinci
-okuyucu tur 1'de 12'nin 11'ini doğruladı; tur 2 ve 3 henüz denetlenmedi.
+Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar ve dört okuma turunu taşır:
+`Main.lean`'den Galois satırına ve pencere sınırının kanıtına inen yaklaşık 1.060 satır, yedi modül notu, her cümle atıflı. Kör ikinci
+okuyucu tur 1'de 12'nin 11'ini doğruladı; tur 2–4 henüz denetlenmedi.
 İspatın geçerli olup olmadığı hakkında bir şey söylemez.
 
 Aynı çıktı her depo için, `yapi.py`'den (sıcak noktalar için `rontgen.py`'den de) sonra
