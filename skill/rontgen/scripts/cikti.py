@@ -79,22 +79,54 @@ def layout(y, limit=14):
         weight[b] = weight.get(b, 0) + n
     keep = set(sorted(weight, key=lambda m: -weight[m])[:limit])
     edges = [(a, b, t) for a, b, t, _ in edges if a in keep and b in keep and a != b]
+    # A cycle pushed every member to the cap: 13 boxes in one row under an empty page (a 175k-file Lean release).
+    # Break cycles first: a [K] edge back onto the DFS stack is drawn but does not layer.
+    out = {m: [] for m in keep}
+    for a, b, t in edges:
+        if t == "K":
+            out[a].append(b)
+    back, state = set(), {}
+
+    def dfs(m):
+        state[m] = 1
+        for n in sorted(out[m], key=lambda n: -weight[n]):
+            if state.get(n) == 1:
+                back.add((m, n))
+            elif n not in state:
+                dfs(n)
+        state[m] = 2
+    for m in sorted(keep, key=lambda m: -weight[m]):
+        if m not in state:
+            dfs(m)
     level = {m: 0 for m in keep}
     for _ in range(len(keep)):
         changed = False
         for a, b, t in edges:
-            if t == "K" and level[b] < level[a] + 1 and level[a] + 1 < len(keep):
+            if t == "K" and (a, b) not in back and level[b] < level[a] + 1:
                 level[b] = level[a] + 1; changed = True
         if not changed:
             break
-    rows = {}
-    for m in sorted(keep):
-        rows.setdefault(level[m], []).append(m)
+    rows, r = {}, 0
+    for lv in sorted(set(level.values())):
+        ms = sorted((m for m in keep if level[m] == lv), key=lambda m: -weight[m])
+        for i in range(0, len(ms), ROW):     # a wide layer wraps instead of running off the page
+            rows[r] = ms[i:i + ROW]; r += 1
     pos = {}
     for r, ms in rows.items():
         for i, m in enumerate(ms):
             pos[m] = (40 + i * 230, 40 + r * 110)
     return pos, edges
+
+
+ROW = 5
+
+
+def label(m: str) -> str:
+    """The last two path parts if they fit, else the last one: `Development/WeilBound`, never `elopment/...`."""
+    for s in ("/".join(m.split("/")[-2:]), m.split("/")[-1]):    # parent too, when it fits; never a cut word
+        if len(s) <= 30:
+            return s
+    return "…" + s[-29:]
 
 
 def svg(y):
@@ -110,7 +142,7 @@ def svg(y):
         o.append(f'<line x1="{x1 + 100}" y1="{y1 + 44}" x2="{x2 + 100}" y2="{y2}" stroke="#333"{dash} marker-end="url(#o)"/>')
     for m, (x, yy) in pos.items():
         o.append(f'<rect x="{x}" y="{yy}" width="200" height="44" rx="6" fill="#f4f4f4" stroke="#333"/>')
-        o.append(f'<text x="{x + 100}" y="{yy + 27}" text-anchor="middle">{html.escape(m[-30:])}</text>')
+        o.append(f'<text x="{x + 100}" y="{yy + 27}" text-anchor="middle">{html.escape(label(m))}</text>')
     o.append(f'<text x="10" y="{h - 10}" fill="#555">[K] duz cizgi: beyan edilmis bag. [H] kesik: ad eslesmesi. '
              f'{len(pos)} modul gosterildi; tam grafik yapi.json.</text></svg>')
     return "\n".join(o) + "\n"
@@ -136,7 +168,7 @@ def png(y, path):
         d.ellipse([p2[0] - 4, p2[1] - 4, p2[0] + 4, p2[1] + 4], fill="#333")
     for m, (x, yy) in pos.items():
         d.rounded_rectangle([x, yy, x + 200, yy + 44], 6, fill="#f4f4f4", outline="#333")
-        d.text((x + 8, yy + 15), m[-30:], fill="black")
+        d.text((x + 8, yy + 15), label(m), fill="black")
     d.text((10, h - 20), "[K] duz cizgi, [H] kesik; tam grafik yapi.json", fill="#555")
     im.save(path)
 
@@ -309,6 +341,17 @@ def self_test() -> int:
     t("svg: [K] duz, [H] kesik, zayif bag cizilmez", s.count("<line") == 2 and s.count("stroke-dasharray") == 1 and ">d<" not in s)
     pos, _ = layout(y)
     t("yerlesim: [K] bag katman atlatir", pos["b"][1] > pos["a"][1])
+    ring = {"edges": [{"from": f"m{i}", "to": f"m{(i + 1) % 8}", "tier": "K", "files": 9 - i} for i in range(8)]
+            + [{"from": "m0", "to": f"m{i}", "tier": "K", "files": 1} for i in range(2, 8)]}
+    pos, _ = layout(ring)
+    rows = {}
+    for x_, y_ in pos.values():
+        rows[y_] = rows.get(y_, 0) + 1
+    t("yerlesim: dongu tek satira yigilmaz, ust satir bos kalmaz, satir en cok ROW kutu",
+      min(rows) == 40 and len(rows) >= 2 and max(rows.values()) <= ROW)
+    t("etiket: son iki parca, bastan kesilir", label("src/Development/WeilBound") == "Development/WeilBound"
+      and label("src/Development/AbelianVarietyTheory") == "AbelianVarietyTheory"
+      and label("a/" + "x" * 40).startswith("…") and len(label("a/" + "x" * 40)) == 30)
     with tempfile.TemporaryDirectory() as d:
         with io.open(os.path.join(d, "mimari.md"), "w", encoding="utf-8") as f:
             f.write("# Mimari\n\nMetin `a.rs:1` & <x>.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\n```mermaid\nflowchart LR\n```\n- madde\n")
