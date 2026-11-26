@@ -70,6 +70,18 @@ READ_SHARE = 0.6
 ORNEK_HEAD = "# Kor denetim"   # first line of atif.py --ornek
 
 
+
+def kesir(x: float) -> float:
+    """A share kept to 3 decimals, except a small non-zero one keeps 2 significant digits:
+    561 lines of a 17.4-million-line Lean release are 0.000032, not 0.0."""
+    return round(x, 3) if x == 0 or x >= 0.001 else float(f"{x:.2g}")
+
+
+def yuzde(x: float, d: int = 1) -> str:
+    p = x * 100
+    return f"%{round(p, d) if d else round(p)}" if p == 0 or p >= 0.1 else f"%{p:.2g}"
+
+
 def second_reader(docs: str):
     """-> {file, items, done, tuttu, tutmadi, cikmiyor} for the checklist in docs, or None when there is none."""
     found = None
@@ -193,7 +205,7 @@ def build(docs: str, repo=None):
         m["unread_heat"] += max(1, v["commits"] or 0) * (v["lines"] - got)   # no history: size alone
     for m in mods.values():
         share = m["read"] / m["lines"] if m["lines"] else 0.0
-        m["share"] = round(share, 3)
+        m["share"] = kesir(share)
         if has_ranges:
             m["state"] = "okundu" if share >= READ_SHARE else "kismen" if m["read"] else "okunmadi"
         else:
@@ -206,7 +218,7 @@ def build(docs: str, repo=None):
     notes = sorted(os.path.splitext(n)[0] for n in os.listdir(os.path.join(docs, "moduller"))) if os.path.isdir(os.path.join(docs, "moduller")) else []
     flows = sorted(os.path.splitext(n)[0] for n in os.listdir(os.path.join(docs, "akislar"))) if os.path.isdir(os.path.join(docs, "akislar")) else []
     return {"has_ranges": has_ranges, "read_share_rule": READ_SHARE, "source_lines": total, "read_lines": got,
-            "share": round(got / total, 3) if total else 0.0, "anchored_lines": sum(len(v) for p, v in anchors.items() if p in src),
+            "share": kesir(got / total) if total else 0.0, "anchored_lines": sum(len(v) for p, v in anchors.items() if p in src),
             "anchors_total": sum(len(v) for v in anchors.values()),
             "modules": dict(sorted(mods.items(), key=lambda x: -x[1]["lines"])), "hotspots": hot,
             "next": [m for m, _ in todo[:3]], "module_notes": notes, "flows": flows,
@@ -230,7 +242,7 @@ def render(k: dict, repo_name: str) -> str:
               + (f" {sr['items'] - judged} cumle bos." if sr["items"] > judged else ""), ""]
     if k["has_ranges"]:
         o += [f"Yazili belgeler, test olmayan {k['source_lines']} kaynak satirin **{k['read_lines']} tanesinin** "
-              f"(**%{round(k['share'] * 100, 1)}**) okunmasina dayaniyor (`okunan.tsv`); bunlarin {k['anchored_lines']} satiri capali "
+              f"(**{yuzde(k['share'])}**) okunmasina dayaniyor (`okunan.tsv`); bunlarin {k['anchored_lines']} satiri capali "
               f"(`atiflar.tsv`'deki {k['anchors_total']} farkli capali satirin {k['anchors_total'] - k['anchored_lines']}'i test ya da "
               "kaynak disi dosyada; `atif.py` ayni satira iki kez yazilmis capayi iki kez sayar).",
               f"Bir modul satirlarinin %{int(k['read_share_rule'] * 100)}'i okununca `okundu` sayilir: bu bir uzlasimdir, yeterlilik iddiasi degil.", ""]
@@ -253,7 +265,7 @@ def render(k: dict, repo_name: str) -> str:
         o.append("")
 
     table(["Modul", "Durum", "Kaynak satir", "Okunan", "Pay", "Dokunulan dosya", "Capa"],
-          [(m, v["state"], v["lines"], v["read"], f"%{round(v['share'] * 100)}", f"{v['files_touched']} / {v['files']}", v["anchors"])
+          [(m, v["state"], v["lines"], v["read"], yuzde(v['share'], 0), f"{v['files_touched']} / {v['files']}", v["anchors"])
            for m, v in k["modules"].items()])
     if k["hotspots"]:
         o += ["## Sicak noktalar ne kadar okundu", ""]
@@ -348,6 +360,8 @@ def self_test() -> int:
               "tutmadi": 0, "cikmiyor": 1} and "2 yargilandi" in render(build(docs)[0], "x") and "1 cumle bos" in render(build(docs)[0], "x"))
         write("out/rontgen.json", json.dumps({"hotspots": []}))
         check("eski olcum dosyasi reddedilir", build(docs)[1] != [])
+    check("kucuk pay sifira yuvarlanmaz", kesir(561 / 17365664) > 0 and yuzde(561 / 17365664) == "%0.0032"
+          and yuzde(0.5) == "%50.0" and kesir(0.5) == 0.5)
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 
@@ -381,7 +395,7 @@ def main() -> int:
         json.dump(k, f, ensure_ascii=False, indent=2); f.write("\n")
     with io.open(os.path.join(a.docs, "kapsam.md"), "w", encoding="utf-8", newline="\n") as f:
         f.write(dil.cevir(render(k, name), a.lang or "tr-ascii"))
-    print(f"yazildi: {os.path.join(a.docs, 'kapsam.md')} — pay %{round(k['share'] * 100, 1)}, siradaki: {', '.join(k['next']) or '-'}")
+    print(f"yazildi: {os.path.join(a.docs, 'kapsam.md')} — pay {yuzde(k['share'])}, siradaki: {', '.join(k['next']) or '-'}")
     return 0
 
 

@@ -56,10 +56,13 @@ function order() {
     return li;
   }));
 }
+// A share below 0.1% keeps two significant digits: 0.003% must not print as 0%.
+function pct(x) { const p = x * 100, o = p > 0 && p < 0.1 ? { maximumSignificantDigits: 2 } : { maximumFractionDigits: 1 };
+  return p.toLocaleString(L === "en" ? "en-US" : "tr-TR", o); }
 function docs() {
   const box = document.getElementById("docs"), R = D.reading || {}, sub = document.getElementById("docs-sub");
   if (!R.read) { sub.textContent = t("docs_none"); box.replaceChildren(); return; }
-  sub.textContent = R.cov && R.cov.share != null ? t("docs_share") + " " + (R.cov.share * 100).toLocaleString(L === "en" ? "en-US" : "tr-TR", { maximumFractionDigits: 1 }) + "%" : "";
+  sub.textContent = R.cov && R.cov.share != null ? t("docs_share") + " " + pct(R.cov.share) + "%" : "";
   const parts = [];
   if (R.order.length) { const h = document.createElement("p"); h.textContent = t("docs_order"); const ol = document.createElement("ol"); ol.className = "order";
     R.order.forEach((o) => { const li = document.createElement("li"); li.textContent = o; ol.append(li); }); parts.push(h, ol); }
