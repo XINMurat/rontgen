@@ -18,9 +18,9 @@ counts and module and file names, never source code, and each project keeps its 
 | helix | Rust | 296 files | [open →](ornekler/helix.html) |
 | esbuild | Go | 196 files | [open →](ornekler/esbuild.html) |
 
-The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis, and carries the first
-reading round: 561 lines along the trunk from `Main.lean`, three module notes (in Turkish), every sentence cited, a blind
-second reader held 11 of 12. It says nothing about whether the proof holds.
+The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis, and carries two reading
+rounds: about 800 lines from `Main.lean` down to the Galois row and the window bound, five module notes (in Turkish), every
+sentence cited. A blind second reader held 11 of 12 for round 1; round 2 is not yet checked. It says nothing about whether the proof holds.
 
 The same output is made for any repository with `python scripts/pano.py --docs rontgen-out --repo .` after `yapi.py`
 (and `rontgen.py`, for hotspots). [Back to the overview](./)
@@ -40,8 +40,9 @@ modül ve dosya adları taşırlar, kaynak kod asla; her proje kendi lisansını
 | helix | Rust | 296 dosya | [aç →](ornekler/helix.html#tr) |
 | esbuild | Go | 196 dosya | [aç →](ornekler/esbuild.html#tr) |
 
-Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar ve ilk okuma turunu taşır:
-`Main.lean`'den inen gövde boyunca 561 satır, üç modül notu, her cümle atıflı, kör ikinci okuyucu 12'nin 11'ini doğruladı.
+Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar ve iki okuma turunu taşır:
+`Main.lean`'den Galois satırına ve pencere sınırına inen yaklaşık 800 satır, beş modül notu, her cümle atıflı. Kör ikinci okuyucu
+tur 1'de 12'nin 11'ini doğruladı; tur 2 henüz denetlenmedi.
 İspatın geçerli olup olmadığı hakkında bir şey söylemez.
 
 Aynı çıktı her depo için, `yapi.py`'den (sıcak noktalar için `rontgen.py`'den de) sonra
