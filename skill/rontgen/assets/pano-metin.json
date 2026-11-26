@@ -46,7 +46,10 @@
   "out": "giden",
   "more": "modül daha sayfada yok (en büyükleri gösterildi)",
   "foot": "Röntgen pano.py ile üretildi. İnternet gerektirmez; veri bu dosyanın içindedir.",
-  "noscript": "Bu görüntüleyici betik çalıştırmıyor: başlıklar ve özet aşağıda, grafikler için dosyayı bir tarayıcıda açın."
+  "noscript": "Bu görüntüleyici betik çalıştırmıyor: başlıklar ve özet aşağıda, grafikler için dosyayı bir tarayıcıda açın.",
+  "dropped": "zayıf bağ okunurluk için çizilmedi (en güçlü 40 bağ, en büyüğün %1'inden ağır olanlar gösterildi; tamamı yapi.json'da).",
+  "langs_none": "Bu depoda dile özel çözümleyici çalışmadı (Rust, Go, Java/Kotlin, Lean ya da config'teki dil); bağlar genel kurallarla çözüldü.",
+  "measured": "ölçüm"
  },
  "en": {
   "title": "Röntgen dashboard",
@@ -95,6 +98,9 @@
   "out": "out",
   "more": "more modules are not on the page (the largest are shown)",
   "foot": "Made by Röntgen pano.py. No network needed; the data is inside this file.",
-  "noscript": "This viewer runs no scripts: headings and the summary are below; open the file in a browser for the charts."
+  "noscript": "This viewer runs no scripts: headings and the summary are below; open the file in a browser for the charts.",
+  "dropped": "weak links are not drawn, for legibility (the 40 strongest carrying at least 1% of the largest are shown; all are in yapi.json).",
+  "langs_none": "No language-specific resolver ran on this repository (Rust, Go, Java/Kotlin, Lean or a config language); links were resolved by the general rules.",
+  "measured": "measured"
  }
 }

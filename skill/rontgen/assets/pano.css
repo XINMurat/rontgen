@@ -23,3 +23,4 @@ svg{display:block}svg text{fill:var(--muted);font-size:12px}svg .lbl{fill:var(--
 th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--muted);font-weight:500}
 footer{color:var(--muted);font-size:12px;border-top:1px solid var(--line);padding-top:12px}
 @media (prefers-reduced-motion:no-preference){.fade{transition:opacity .15s}}
+.eyebrow{margin:0;color:var(--muted);font-size:12px;letter-spacing:.06em;text-transform:uppercase}

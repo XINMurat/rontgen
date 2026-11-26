@@ -9,7 +9,9 @@ const NS = "http://www.w3.org/2000/svg";
 const el = (tag, attrs, parent) => { const n = document.createElementNS(NS, tag); for (const k in attrs || {}) n.setAttribute(k, attrs[k]); if (parent) parent.append(n); return n; };
 const groups = [...new Set(D.modules.map((m) => m.g))].sort((a, b) => D.modules.filter((m) => m.g === b).reduce((s, m) => s + m.lines, 0) - D.modules.filter((m) => m.g === a).reduce((s, m) => s + m.lines, 0));
 const col = (g) => { const i = groups.indexOf(g); return i >= 0 && i < 6 ? `var(--c${i})` : "var(--c6)"; };
-const last = (m) => m.split("/").filter(Boolean).slice(-1)[0] || m;
+const GENERIC = new Set(["src", "lib", "test", "tests", "internal", "pkg", "app", "source", "sources", "main", "java", "kotlin", "scripts"]);
+const last = (m) => { const p = m.split("/").filter(Boolean); if (!p.length) return m; const z = p[p.length - 1];
+  return GENERIC.has(z.toLowerCase()) && p.length > 1 ? p[p.length - 2] + "/" + z : z; };
 let sel = "";
 const tipOf = (box) => { let tp = box.querySelector(".tip"); if (!tp) { tp = document.createElement("div"); tp.className = "tip"; tp.hidden = true; box.append(tp); } return tp; };
 const tip = (box, ev, lines) => { const tp = tipOf(box); tp.replaceChildren(...lines.map((s, i) => { const n = document.createElement(i ? "span" : "b"); n.textContent = s; if (i) n.style.display = "block"; return n; }));
@@ -19,6 +21,9 @@ const svgIn = (box, w, h, label) => { box.querySelectorAll("svg").forEach((s) =>
 
 function texts() {
   document.documentElement.lang = L;
+  document.getElementById("repo").textContent = D.repo;
+  document.getElementById("where").textContent = D.path + (D.measured ? " · " + t("measured") + " " + D.measured : "");
+  document.title = "Röntgen · " + D.repo;
   document.querySelectorAll("[data-t]").forEach((n) => { n.textContent = t(n.dataset.t); });
   document.querySelectorAll(".sw button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === L)));
 }
@@ -35,28 +40,52 @@ function legend() {
 function block() {
   const box = document.getElementById("block"), B = D.block;
   if (!B.nodes.length) { box.textContent = t("empty"); return; }
-  const bw = 200, bh = 44, xs = B.nodes.map((n) => n.x), ys = B.nodes.map((n) => n.y);
-  const W = Math.max(...xs) + bw + 40, H = Math.max(...ys) + bh + 40, P = new Map(B.nodes.map((n) => [n.m, n]));
-  const s = svgIn(box, W, H, t("block")); s.style.maxWidth = "100%"; s.style.height = "auto";
+  // Boxes in reading order (cycles broken, then topological), B.per_row to a row, each row centred.
+  // A link goes down to a later row, arcs over its own row, or, when it runs back, takes a lane on the right.
+  const bw = 196, bh = 44, gx = 30, gy = 78, pad = 22, nRows = Math.max(...B.nodes.map((n) => n.row)) + 1;
+  const widest = B.per_row * bw + (B.per_row - 1) * gx, P = new Map();
+  for (let r = 0; r < nRows; r++) { const ns = B.nodes.filter((n) => n.row === r).sort((p, q) => p.col - q.col), rw = ns.length * bw + (ns.length - 1) * gx;
+    ns.forEach((n, i) => P.set(n.m, { ...n, X: pad + (widest - rw) / 2 + i * (bw + gx), Y: pad + 18 + r * (bh + gy) })); }
+  const kind = (e) => { const a = P.get(e.a), b = P.get(e.b); return b.o < a.o ? "back" : b.row > a.row ? "down" : "arc"; };
+  const back = B.edges.filter((e) => kind(e) === "back");
+  const laneX0 = pad + widest + 26, W = laneX0 + back.length * 10 + pad, H = pad * 2 + 18 + nRows * (bh + gy) - gy;
+  const s = svgIn(box, W, H, t("block")); s.style.maxWidth = "100%"; s.style.height = "auto"; s.style.margin = "0 auto";
   const mk = el("marker", { id: "ar", viewBox: "0 0 10 10", refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: "auto" }, el("defs", {}, s));
   el("path", { d: "M0,0L10,5L0,10z", fill: "var(--axis)" }, mk);
-  const mx = Math.max(1, ...B.edges.map((e) => e.n)), lg = (n) => 1 + 7 * Math.log(1 + n) / Math.log(1 + mx);
-  const lines = B.edges.map((e) => { const a = P.get(e.a), b = P.get(e.b); const sx = a.x + bw / 2, sy = a.y + bh, tx = b.x + bw / 2, ty = b.y;
-    const up = ty <= sy; const d = up ? `M${a.x + bw},${a.y + bh / 2} C${a.x + bw + 60},${a.y + bh / 2} ${b.x + bw + 60},${b.y + bh / 2} ${b.x + bw},${b.y + bh / 2}` : `M${sx},${sy} C${sx},${(sy + ty) / 2} ${tx},${(sy + ty) / 2} ${tx},${ty}`;
-    const p = el("path", { d, fill: "none", stroke: "var(--axis)", "stroke-width": lg(e.n), "marker-end": "url(#ar)", opacity: .6, class: "fade" }, s);
+  // one port per link on each edge of a box, ordered by where the other end is, so arrows fan out instead of stacking
+  const ports = (side) => { const m = new Map(), by = new Map();
+    B.edges.forEach((e) => { const k = kind(e); [["a", "b"], ["b", "a"]].forEach(([me, other]) => {
+      const sd = k === "back" ? "right" : k === "arc" ? "top" : me === "a" ? "bottom" : "top";
+      if (sd !== side) return; const key = e[me]; if (!by.has(key)) by.set(key, []); by.get(key).push([e, me, other]); }); });
+    by.forEach((list, key) => { const n = P.get(key);
+      list.sort((p, q) => side === "right" ? P.get(p[0][p[2]]).Y - P.get(q[0][q[2]]).Y : P.get(p[0][p[2]]).X - P.get(q[0][q[2]]).X);
+      list.forEach(([e, me], i) => { const f = (i + 1) / (list.length + 1); m.set(e.a + "|" + e.b + "|" + me, side === "right" ? n.Y + 6 + (bh - 12) * f : n.X + 12 + (bw - 24) * f); }); });
+    return m; };
+  const pb = ports("bottom"), pt = ports("top"), pr = ports("right"), key = (e, me) => e.a + "|" + e.b + "|" + me;
+  const path = (e) => { const a = P.get(e.a), b = P.get(e.b), k = kind(e);
+    if (k === "down") { const sx = pb.get(key(e, "a")), sy = a.Y + bh, tx = pt.get(key(e, "b")), ty = b.Y - 2, d = ty - sy;
+      return `M${sx},${sy} C${sx},${sy + Math.min(40, d / 2)} ${tx},${ty - Math.min(40, d / 2)} ${tx},${ty}`; }
+    if (k === "arc") { const sx = pt.get(key(e, "a")), tx = pt.get(key(e, "b")), y0 = a.Y, top = y0 - 14 - Math.min(26, Math.abs(tx - sx) / 12);
+      return `M${sx},${y0} C${sx},${top} ${tx},${top} ${tx},${y0 - 2}`; }
+    const lx = laneX0 + back.indexOf(e) * 10, ay = pr.get(key(e, "a")), by = pr.get(key(e, "b")), r = 5;
+    return `M${a.X + bw},${ay} H${lx - r} Q${lx},${ay} ${lx},${ay - r} V${by + r} Q${lx},${by} ${lx - r},${by} H${b.X + bw + 2}`; };
+  const mx = Math.max(1, ...B.edges.map((e) => e.n)), lg = (n) => 1 + 5 * Math.log(1 + n) / Math.log(1 + mx);
+  const lines = B.edges.slice().sort((p, q) => p.n - q.n).map((e) => {
+    const p = el("path", { d: path(e), fill: "none", stroke: "var(--axis)", "stroke-width": lg(e.n), "marker-end": "url(#ar)", opacity: .55, class: "fade" }, s);
     if (e.t !== "K") p.setAttribute("stroke-dasharray", "5,4");
     p.addEventListener("pointermove", (ev) => tip(box, ev, [e.a + " → " + e.b, nf(e.n) + " " + t("pairs")])); p.addEventListener("pointerleave", () => untip(box)); p._e = e; return p; });
-  B.nodes.forEach((n) => { const g = el("g", { transform: `translate(${n.x},${n.y})` }, s);
+  P.forEach((n) => { const g = el("g", { transform: `translate(${n.X},${n.Y})` }, s);
     el("rect", { width: bw, height: bh, rx: 6, fill: "var(--panel)", stroke: "var(--line)" }, g); el("rect", { width: 5, height: bh, rx: 2, fill: col(n.g) }, g);
-    const a = el("text", { x: 12, y: 19, class: "lbl" }, g); let nm = last(n.m); a.textContent = nm.length > 26 ? nm.slice(0, 25) + "…" : nm;
+    const a = el("text", { x: 12, y: 19, class: "lbl" }, g); const nm = last(n.m); a.textContent = nm.length > 25 ? nm.slice(0, 24) + "…" : nm;
     const b = el("text", { x: 12, y: 35 }, g); b.textContent = n.g + " · " + nf(n.lines) + " " + t("lines");
-    g.addEventListener("pointerenter", () => lines.forEach((p) => p.setAttribute("opacity", p._e.a === n.m || p._e.b === n.m ? .95 : .08)));
+    g.addEventListener("pointerenter", () => lines.forEach((p) => p.setAttribute("opacity", p._e.a === n.m || p._e.b === n.m ? .95 : .05)));
     g.addEventListener("pointermove", (ev) => tip(box, ev, [n.m, nf(n.lines) + " " + t("lines")]));
-    g.addEventListener("pointerleave", () => { lines.forEach((p) => p.setAttribute("opacity", .6)); untip(box); }); });
+    g.addEventListener("pointerleave", () => { lines.forEach((p) => p.setAttribute("opacity", .55)); untip(box); }); });
+  const note = document.getElementById("block-note"); if (note) { note.hidden = !B.dropped; note.textContent = nf(B.dropped) + " " + t("dropped"); }
 }
 function rows() { return D.modules.filter((m) => !sel || m.g === sel); }
 function scatter() {
-  const box = document.getElementById("scatter"), R = rows(), W = Math.max(box.clientWidth, 320), H = 320, m = { l: 44, r: 12, t: 12, b: 36 };
+  const box = document.getElementById("scatter"), R = rows(), W = Math.max(box.clientWidth, 320), H = 340, m = { l: 44, r: 30, t: 30, b: 36 };
   const s = svgIn(box, W, H, t("scatter")); const sl = (v) => Math.log(1 + v);
   const mxX = sl(Math.max(1, ...D.modules.map((r) => r.fo))), mxY = sl(Math.max(1, ...D.modules.map((r) => r.fi))), mxL = Math.max(1, ...D.modules.map((r) => r.lines));
   const X = (v) => m.l + sl(v) / mxX * (W - m.l - m.r), Y = (v) => H - m.b - sl(v) / mxY * (H - m.t - m.b);
@@ -120,7 +149,8 @@ function trust() {
 }
 function draw() {
   texts(); tiles(); legend(); block(); scatter(); tree(); matrix(); used(); trust();
-  table("langs", ["lang", "resolved", "external", "unresolved"], Object.keys(D.langs).length ? Object.entries(D.langs).map(([k, v]) => [k, v.K, v.dis, v.miss]) : null);
+  if (Object.keys(D.langs).length) table("langs", ["lang", "resolved", "external", "unresolved"], Object.entries(D.langs).map(([k, v]) => [k, v.K, v.dis, v.miss]));
+  else document.getElementById("langs").textContent = t("langs_none");
   table("hot", ["file", "commits", "changed", "lines", "people"], D.hot && D.hot.map((h) => [h.p, h.c, h.ch, h.l, h.pp]));
   const more = document.getElementById("more"); more.hidden = !D.modules_cut; more.textContent = nf(D.modules_cut) + " " + t("more");
 }

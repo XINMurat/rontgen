@@ -31,11 +31,11 @@ import json
 import os
 import re
 import sys
+import time
 from html import escape
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too
-import cikti  # noqa: E402
 from ortak import load_config  # noqa: E402
 
 TOP_BLOCK, TOP_MATRIX, MAX_MODULES = 16, 12, 400
@@ -53,7 +53,68 @@ def page_lang(lang: str) -> str:
     return "en" if lang == "en" else "tr"
 
 
-def data_of(y: dict, r: dict | None) -> dict:
+def block_of(y: dict, mods: dict, per_row: int = 4, keep: int = 40) -> dict:
+    """The heaviest modules in reading order, `per_row` to a row; the strongest links only.
+
+    Layering by longest path put a dense 16-module graph in one column of 13 rows with every back link in a
+    lane of its own (a 175k-file Lean release). Here the order is topological once cycles are broken, rows
+    wrap that order, and a link is drawn if it is among the `keep` strongest and carries 1% of the largest."""
+    edges = [e for e in y.get("edges", []) if not e.get("weak")]
+    weight = Counter()
+    for e in edges:
+        weight[e["from"]] += e["files"]; weight[e["to"]] += e["files"]
+    top = [m for m, _ in weight.most_common(TOP_BLOCK)]
+    inner = [e for e in edges if e["from"] in top and e["to"] in top and e["from"] != e["to"]]
+    biggest = max((e["files"] for e in inner), default=0)
+    inner = sorted((e for e in inner if e["files"] * 100 >= biggest), key=lambda e: -e["files"])[:keep]
+    out = {m: [e["to"] for e in inner if e["from"] == m and e["tier"] == "K"] for m in top}
+    state, back = {}, set()
+
+    def dfs(m):
+        state[m] = 1
+        for n in sorted(out[m], key=lambda n: -weight[n]):
+            if state.get(n) == 1:
+                back.add((m, n))
+            elif n not in state:
+                dfs(n)
+        state[m] = 2
+    for m in top:
+        if m not in state:
+            dfs(m)
+    level = {m: 0 for m in top}
+    for _ in top:
+        moved = False
+        for e in inner:
+            a, b = e["from"], e["to"]
+            if e["tier"] == "K" and (a, b) not in back and level[b] < level[a] + 1:
+                level[b] = level[a] + 1; moved = True
+        if not moved:
+            break
+    order = sorted(top, key=lambda m: (level[m], -weight[m]))
+    return {"nodes": [{"m": m, "o": i, "row": i // per_row, "col": i % per_row, "g": group_of(m),
+                       "lines": mods.get(m, {}).get("lines", 0)} for i, m in enumerate(order)],
+            "per_row": per_row, "edges": [{"a": e["from"], "b": e["to"], "t": e["tier"], "n": e["files"]} for e in inner],
+            "dropped": len([e for e in edges if e["from"] in top and e["to"] in top]) - len(inner)}
+
+
+GENERIC_ROOTS = {"lean", "src", "lib", "app", "code", "source", "repo", "project", "main", "packages"}
+
+
+def project_name(path: str) -> str:
+    """The folder that was measured, with its parent when the folder alone says nothing (`riemann-lean/lean`)."""
+    parts = [x for x in str(path).replace("\\", "/").split("/") if x and not x.endswith(":")]
+    if not parts:
+        return "."
+    return "/".join(parts[-2:]) if parts[-1].lower() in GENERIC_ROOTS and len(parts) > 1 else parts[-1]
+
+
+def short_path(path: str) -> str:
+    """Only the last two folders: a page that is shared must not carry the measuring machine's home or user name."""
+    parts = [x for x in str(path).replace("\\", "/").split("/") if x and not x.endswith(":")]
+    return ("…/" if len(parts) > 2 else "") + "/".join(parts[-2:]) if parts else "."
+
+
+def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | None = None) -> dict:
     mods, fan = y.get("modules", {}), y.get("fan", {})
     rows = sorted(({"m": m, "g": group_of(m), "files": v.get("files", 0), "lines": v.get("lines", 0),
                     "fi": fan.get(m, {}).get("in_k", 0), "fo": fan.get(m, {}).get("out_k", 0)} for m, v in mods.items()),
@@ -62,10 +123,7 @@ def data_of(y: dict, r: dict | None) -> dict:
     weight = Counter()
     for e in hard:
         weight[e["from"]] += e["files"]; weight[e["to"]] += e["files"]
-    pos, ledges = cikti.layout(y, TOP_BLOCK)                       # cycles broken, wide layers wrapped
-    files_of = {(e["from"], e["to"]): e["files"] for e in y.get("edges", [])}
-    block = {"nodes": [{"m": m, "x": x, "y": yy, "g": group_of(m), "lines": mods.get(m, {}).get("lines", 0)} for m, (x, yy) in pos.items()],
-             "edges": [{"a": a, "b": b, "t": t, "n": files_of.get((a, b), 1)} for a, b, t in ledges]}
+    block = block_of(y, mods)
     mtop = [m for m, _ in weight.most_common(TOP_MATRIX)]
     matrix = {"mods": mtop, "cells": [{"a": e["from"], "b": e["to"], "n": e["files"]} for e in hard
                                       if e["from"] in mtop and e["to"] in mtop]}
@@ -75,7 +133,7 @@ def data_of(y: dict, r: dict | None) -> dict:
     hot = None if not r or r.get("hotspots") is None else [
         {"p": h["path"], "c": h.get("commits"), "l": h.get("lines"), "ch": h.get("changed"), "pp": h.get("people")} for h in r["hotspots"][:15]]
     return {
-        "repo": os.path.basename(str(y.get("repo", "")).rstrip("/\\")) or ".",
+        "repo": name or project_name(y.get("repo", "")), "path": short_path(y.get("repo", "")), "measured": measured,
         "summary": {"files": sum(x["files"] for x in rows), "lines": sum(x["lines"] for x in rows), "modules": len(rows),
                     "edges_k": y.get("edge_counts", {}).get("K", 0), "edges_h": y.get("edge_counts", {}).get("H", 0),
                     "cycles": len(y.get("cycles", [])), "excluded": sum(len(v) for v in y.get("excluded", {}).values())},
@@ -118,20 +176,22 @@ def static_body(d: dict, lang: str) -> str:
                     for k, t in (("files", "files"), ("lines", "lines"), ("modules", "modules"), ("edges_k", "edges"),
                                  ("cycles", "cycles"), ("excluded", "excluded")))
     body = body.replace('<div class="tiles" id="tiles"></div>', f'<div class="tiles" id="tiles">{tiles}</div>', 1)
-    body = body.replace('<span id="repo"></span>', f'<span id="repo">{escape(d["repo"])}</span>', 1)
+    body = body.replace('<h1 id="repo"></h1>', f'<h1 id="repo">{escape(d["repo"])}</h1>', 1)
+    where = escape(d["path"]) + (f' · {escape(s["measured"])} {escape(d["measured"])}' if d.get("measured") else "")
+    body = body.replace('<span id="where"></span>', f'<span id="where">{where}</span>', 1)
     note = escape(STRINGS["tr"]["noscript"]) + " / " + escape(STRINGS["en"]["noscript"])
     return body.replace("<main>", f'<main><noscript><p class="muted">{note}</p></noscript>', 1)
 
 
-def html(y: dict, r: dict | None, lang: str) -> str:
-    d = data_of(y, r)
+def html(y: dict, r: dict | None, lang: str, name: str | None = None, measured: str | None = None) -> str:
+    d = data_of(y, r, name, measured)
     return ("<!doctype html>\n" f'<html lang="{page_lang(lang)}"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
             f"<title>Röntgen · {escape(d['repo'])}</title>"
             f"<style>{asset('pano.css')}</style></head><body>"
             f'{static_body(d, lang)}<script type="application/json" id="pano-data">{embed(d)}</script>'
             f'<script type="application/json" id="pano-strings">{embed(STRINGS)}</script>'
-            f"<script>document.getElementById('repo').textContent={embed(d['repo'])};\n{asset('pano.js')}</script>"
+            f"<script>\n{asset('pano.js')}</script>"
             "</body></html>\n")
 
 
@@ -155,8 +215,14 @@ def self_test() -> int:
     check("tek dosya: dis betik, stil veya font yok", not any(x in net for x in ("<script src", "<link", "@import", "http://", "https://")))
     check("iki dil de gomulu; ilk dil report_lang'den",
           'lang="tr"' in h and "Blok şeması" in h and "Block diagram" in h and 'lang="en"' in html(y, None, "en"))
+    check("proje adi: genel klasorde ust klasorle, --name ustun",
+          project_name("C:/x/riemann-lean/lean") == "riemann-lean/lean" and project_name("/a/helix") == "helix"
+          and '<h1 id="repo">demo</h1>' in h and '<h1 id="repo">Benim</h1>' in html(y, None, "tr", "Benim", "2026-11-26")
+          and "2026-11-26" in html(y, None, "tr", None, "2026-11-26"))
+    check("yerel yol sayfaya girmez: yalniz son iki klasor", short_path(r"C:\Users\ad\is\proje") == "…/is/proje"
+          and "Users" not in html(dict(y, repo="C:/Users/ad/is/proje"), None, "tr"))
     check("betiksiz gorunum: baslik, ozet sayilari ve noscript notu HTML'de",
-          '<h1 data-t="title">Röntgen panosu</h1>' in h and "<b>7</b>" in h and "<noscript>" in h
+          '<p class="eyebrow" data-t="title">Röntgen panosu</p>' in h and "<b>7</b>" in h and "<noscript>" in h
           and 'data-t="title">Röntgen dashboard<' in html(y, None, "en"))
     check("varliklar gomuldu: stil, govde, betik", "--c0:" in h and 'id="block"' in h and "function squarify" in h)
     check("tr-ascii Turkce acilir", 'lang="tr"' in html(y, None, "tr-ascii"))
@@ -184,6 +250,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--docs", default="rontgen-out", help="yapi.json'un (ve varsa rontgen.json'un) oldugu dizin")
     ap.add_argument("--repo", default=None, help="report_lang icin config'in okunacagi depo")
+    ap.add_argument("--name", default=None, help="sayfada gorunecek proje adi; yoksa olculen klasorden")
     ap.add_argument("--lang", choices=("tr-ascii", "tr", "en"), default=None, help="ilk acilis dili; yoksa config'teki report_lang")
     ap.add_argument("--out", default=None, help="varsayilan: <docs>/pano.html")
     ap.add_argument("--self-test", action="store_true")
@@ -212,7 +279,8 @@ def main() -> int:
         print("rontgen.json yok: sicak noktalar 'olculmedi' yazilir")
     out = a.out or os.path.join(a.docs, "pano.html")
     with io.open(out, "w", encoding="utf-8", newline="\n") as f:
-        f.write(html(y, r, lang))
+        stamp = time.strftime("%Y-%m-%d", time.localtime(os.path.getmtime(os.path.join(a.docs, "yapi.json"))))
+        f.write(html(y, r, lang, a.name, stamp))
     print(f"yazildi: {out} (ilk dil {page_lang(lang)}; TR/EN dugmesiyle degisir)")
     return 0
 
