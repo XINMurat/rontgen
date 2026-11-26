@@ -26,6 +26,8 @@ feeling, the architecture diagram describes the code as once intended, and a fas
 deadline — writes more than anyone reads. Röntgen answers the countable half from sources that cannot flatter
 anyone, spends the reading where the counts point, and **says how much it actually read**.
 
+**[See it on three real codebases: Lean, Rust, Go →](ornekler.html)**
+
 ### Two halves
 
 | | What it does | Who does it |
@@ -69,20 +71,6 @@ minutes. It took four runs: each printed a nonzero count of what it could not se
 Windows long-path failures, one heuristic written for minified JavaScript). There was no architecture document to referee
 against, so this row is not in the table above, and it says nothing about the proof.
 [The case study →](https://xinmurat.github.io/case-study-lean.html)
-
-### See it on real code
-
-Each page below is one `pano.html` exactly as `pano.py` wrote it: one file, no network, a TR / EN switch. They carry
-counts and module and file names, never source code, and each project keeps its own licence.
-
-| Project | Language | Size | Page |
-|---|---|---|---|
-| riemann-lean | Lean 4 | 175,187 files, 17.5 million lines | [open →](ornekler/riemann-lean.html) |
-| helix | Rust | 296 files | [open →](ornekler/helix.html) |
-| esbuild | Go | 196 files | [open →](ornekler/esbuild.html) |
-
-The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis. It says nothing about
-whether the proof holds.
 
 ### Languages and ecosystems
 
@@ -129,6 +117,8 @@ kodun bir zamanlar nasıl tasarlandığını anlatır, hızlı bir yazar — bir
 okuyabileceğinden fazlasını yazar. Röntgen sayılabilir yarıyı kimseyi pohpohlayamayacak kaynaklardan cevaplar, okumayı
 sayıların gösterdiği yere harcar ve **gerçekte ne kadar okuduğunu söyler**.
 
+**[Üç gerçek kod tabanında görün: Lean, Rust, Go →](ornekler.html#tr)**
+
 ### İki yarı
 
 | | Ne yapar | Kim yapar |
@@ -173,20 +163,6 @@ Dört koşum sürdü: her biri göremediği şeyin sıfırdan büyük bir sayıs
 Windows uzun yol hatası, küçültülmüş JavaScript için yazılmış bir sezgi). Hakem olacak bir mimari belge yoktu; bu yüzden
 bu satır yukarıdaki tabloda değil, ve ispat hakkında hiçbir şey söylemez.
 [Vaka çalışması →](https://xinmurat.github.io/case-study-lean.html#tr)
-
-### Gerçek kod üzerinde görün
-
-Aşağıdaki her sayfa, `pano.py`'nin yazdığı haliyle bir `pano.html`: tek dosya, ağ gerekmez, TR / EN düğmesi. Sayılar ve
-modül ve dosya adları taşırlar, kaynak kod asla; her proje kendi lisansını korur.
-
-| Proje | Dil | Boyut | Sayfa |
-|---|---|---|---|
-| riemann-lean | Lean 4 | 175.187 dosya, 17,5 milyon satır | [aç →](ornekler/riemann-lean.html#tr) |
-| helix | Rust | 296 dosya | [aç →](ornekler/helix.html#tr) |
-| esbuild | Go | 196 dosya | [aç →](ornekler/esbuild.html#tr) |
-
-Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar. İspatın geçerli olup
-olmadığı hakkında bir şey söylemez.
 
 ### Diller ve ekosistemler
 
