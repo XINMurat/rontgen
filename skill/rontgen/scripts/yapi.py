@@ -56,7 +56,7 @@ from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, famil
 import dil  # noqa: E402
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
-import go_dili, jvm_dili, orm_dili, ozel_dil  # noqa: E401,E402
+import go_dili, jvm_dili, lean_dili, orm_dili, ozel_dil  # noqa: E401,E402
 import rust_dili
 from yapi_rapor import render  # noqa: E402
 
@@ -120,7 +120,8 @@ def resolve_web(src: str, target: str, known):
 
 
 def outline_of(fam: str, text: str, routes):
-    marks = c_dili.outline(text, line_of) if fam == "c" else rust_dili.outline(text, line_of) if fam == "rs" else []
+    marks = c_dili.outline(text, line_of) if fam == "c" else rust_dili.outline(text, line_of) if fam == "rs" \
+        else lean_dili.outline(text, line_of) if fam == "lean" else []
     for kind, rx in OUTLINE.get(fam, []):
         for m in rx.finditer(text):
             name = m.group(3)
@@ -209,7 +210,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
                     routes[p].append((line_of(text, m.start()), m.group(1).upper(), m.group(2)))
             if any(rx.search(text) for rx in MAINS):
                 mains.append(p)
-        if fam in OUTLINE or fam in ("c", "rs"):
+        if fam in OUTLINE or fam in ("c", "rs", "lean"):
             outlines[p] = (text.count("\n") + 1, outline_of(fam, text, routes.get(p, [])))
         elif fam == EXTRA and os.path.splitext(p)[1].lower() in specs:      # a language the config describes
             outlines[p] = (text.count("\n") + 1, ozel_dil.outline(text, specs[os.path.splitext(p)[1].lower()], line_of))
@@ -232,7 +233,8 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         return out
 
     lang = {}                                   # Rust mod/use, Go import: resolved through the manifest, never by name
-    for fam, mod, manifest in (("rs", rust_dili, "**/Cargo.toml"), ("go", go_dili, "**/go.mod"), ("java", jvm_dili, "**/pom.xml")):
+    for fam, mod, manifest in (("rs", rust_dili, "**/Cargo.toml"), ("go", go_dili, "**/go.mod"), ("java", jvm_dili, "**/pom.xml"),
+                              ("lean", lean_dili, "**/lakefile.*")):
         lf = {p: t for p, (f, t) in files.items() if f == fam}
         if lf:
             e, cnt, roots = mod.edges(lf, known, read_all(manifest)); hard |= e
@@ -307,7 +309,8 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         "edge_counts": {"K": len(mod_hard), "H": len(strong_soft), "H_weak": len(mod_soft) - len(strong_soft)},
         "cycles": cyc_k, "cycle_candidates": cyc_h,
         "blind_spots": kor_noktalar({p: t for p, (f, t) in files.items() if f not in ("sql", EXTRA) and not is_test(p)}),
-        "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"), "java": lang.get("java"), "ozel": lang.get("ozel"),
+        "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"), "java": lang.get("java"),
+        "lean": lang.get("lean"), "ozel": lang.get("ozel"),
         "most_used_files": [{"path": p, "used_by": n} for p, n in ranked(file_in)[:top]],
         "entry": {"mains": sorted(mains), "functions": entry_fns, "missing": sorted(set(wanted) - found - {"main"}),
                   "route_count": sum(len(v) for v in routes.values()),

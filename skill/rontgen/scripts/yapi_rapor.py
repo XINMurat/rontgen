@@ -79,7 +79,7 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
 
     o += c_dili.render(r["c"]) if r["c"] else []
     for key, title, roots in (("rust", "Rust `mod` / `use`", "crate'ler"), ("go", "Go `import`", "moduller (go.mod)"),
-                              ("java", "Java/Kotlin `import`", "kaynak kokleri"),
+                              ("java", "Java/Kotlin `import`", "kaynak kokleri"), ("lean", "Lean `import`", "kaynak kokleri (lakefile)"),
                               ("ozel", "Projeye ozgu dil (config) `import`", "diller")):
         rn = r.get(key)
         o += ([f"## {title} baglari", "", f"{rn['files']} dosya, {roots}: {', '.join(rn['crates']) or 'bildirim bulunamadi'}. "
@@ -87,6 +87,11 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
               f"**cozulemeyen** (kor nokta): {rn['uses']['cozulemeyen']}."]
               + ([f"Cozulemeyen ornekleri: " + "; ".join(f"`{x}`" for x in rn["uses"]["ornek"])] if rn["uses"].get("ornek") else []) + [""]
               if rn else [])
+    gv = (r.get("lean") or {}).get("uses", {}).get("guven")
+    if r.get("lean"):
+        o += ["## Lean guven envanteri `[H]`", "", "Cekirdegin kanit gormeden kabul ettigi yerler (kesin liste Lean'de `#print axioms`):", ""]
+        table(["Tur", "Sayi", "Ornekler"], [(k, v["say"], ", ".join(f"`{x}`" for x in v["ornek"])) for k, v in gv.items()] or [("-", 0, "hic yok")])
+        o += [""]
     o += ["## En cok yaslanilan dosyalar `[H]`", ""]
     table(["Dosya", "Yaslanan dosya"], [(x["path"], x["used_by"]) for x in r["most_used_files"]] or [("-", "-")])
     e = r["entry"]

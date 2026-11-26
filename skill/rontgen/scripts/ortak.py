@@ -63,11 +63,11 @@ SOURCE = {
     ".php": "PHP", ".c": "C", ".h": "C", ".cpp": "C++", ".hpp": "C++", ".swift": "Swift", ".sql": "SQL",
     ".sh": "Shell", ".ps1": "PowerShell", ".vb": "VB", ".fs": "F#", ".scala": "Scala", ".dart": "Dart",
     ".vue": "Vue", ".svelte": "Svelte", ".css": "CSS", ".scss": "CSS", ".html": "HTML", ".cshtml": "Razor",
-    ".razor": "Razor", ".mjs": "JavaScript",
+    ".razor": "Razor", ".mjs": "JavaScript", ".lean": "Lean",
 }
 FAMILY = {".cs": "cs", ".py": "py", ".ts": "web", ".tsx": "web", ".js": "web", ".jsx": "web", ".vue": "web",
           ".mjs": "web", ".java": "java", ".kt": "java", ".go": "go", ".rs": "rs", ".sql": "sql",
-          ".c": "c", ".h": "c", ".cpp": "c", ".hpp": "c"}
+          ".c": "c", ".h": "c", ".cpp": "c", ".hpp": "c", ".lean": "lean"}
 NOT_SOURCE = {".md", ".txt", ".json", ".yaml", ".yml", ".xml", ".csv", ".lock", ".svg", ".png", ".jpg",
               ".jpeg", ".gif", ".ico", ".pdf", ".docx", ".xlsx", ".xls", ".zip", ".toml", ".ini", ".cfg",
               ".editorconfig", ".gitignore", ".gitattributes", ".sln", ".csproj", ".props", ".config", ".map",
