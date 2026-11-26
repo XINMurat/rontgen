@@ -27,6 +27,8 @@ LANGS = ("tr-ascii", "tr", "en")
 
 # stem (as rendered) -> accented stem; matched at a word start, suffixes kept
 TR_STEMS = {
+    "sinirindan": "sınırından", "isaret": "işaret", "baslayin": "başlayın", "kucuk": "küçük", "okumanin": "okumanın",
+    "ettigi": "ettiği", "henuz": "henüz", "once": "önce",
     "baslangic": "başlangıç", "adim": "adım", "ulasil": "ulaşıl", "noktasindan": "noktasından", "etmedig": "etmediğ",
     "acilir": "açılır", "adlandir": "adlandır", "adres": "adres", "akis": "akış", "alarm": "alarm", "anil": "anıl",
     "anmadig": "anmadığ", "arac": "araç", "aralig": "aralığ", "arali": "aralı", "ariyor": "arıyor", "asagi": "aşağı",
@@ -67,7 +69,8 @@ TR_STEMS = {
     "yaslandig": "yaslandığ", "dagit": "dağıt", "agac": "ağaç", "degerl": "değerl", "goster": "göster", "olustur": "oluştur",
 }
 _TR = sorted(TR_STEMS.items(), key=lambda kv: -len(kv[0]))
-_TR_RX = re.compile(r"(?<![\w./\\-])(" + "|".join(re.escape(k) for k, _ in _TR) + r")([a-z]*)(?![\w./\\-])", re.I)
+_TR_RX = re.compile(r"(?<![\w./\\-])(" + "|".join(re.escape(k) for k, _ in _TR) + r")([a-z]*)(?![\w/\\-]|\.\w)", re.I)
+# a full stop ends a word ("baslayin."); a dot before a letter belongs to a file name ("satir.py")
 # a word joined to _ . / \ - is a name (disa_aktar.py, helix-view): one run turned a file name into Turkish
 
 # phrase (as rendered, exact) -> English; longest first
@@ -181,7 +184,15 @@ EN = [
     ("cizilmedi", "not drawn"), ("Kisi", "People"), ("Dil", "Language"), ("Modul", "Module"), ("dosya", "files"), ("satir", "lines"),
     ("kisi", "people"), ("tablo", "tables"), ("yok", "none"), ("olculmedi", "unmeasured"), ("tuttu", "held"),
     ("tutmadi", "did not hold"), ("satirdan cikmiyor", "says more than its line"), ("ve", "and"), ("ya da", "or"),
-    ("## Giris noktasindan derinlik", "## Depth from entry points"), ("giris dosyalarindan:", "from entry files:"),
+    ("## Giris noktasindan derinlik", "## Depth from entry points"),
+    ("Bir oturumda bir dilim; oturum bu defteri ve belgeleri okuyup devam eder.",
+     "One slice per session; the session reads this ledger and the documents, then carries on."),
+    ("Okunmamis isiya gore (commit x okunmamis satir) moduller:", "Modules by unread heat (commits x unread lines):"),
+    ("Okumanin sinirindan", "From the edge of the reading"),     # a code span splits the sentence: each side is its own key
+    (": okunan dosyalarin import ettigi, henuz okunmamis dosyalar; once cok isaret edilen, sonra kucuk olan. "
+     "Zincir boyunca ilerlemek icin buradan baslayin.",
+     ": files that read files import and nobody has read yet; most pointed-at first, then smallest. "
+     "Start here to keep following the chain."), ("giris dosyalarindan:", "from entry files:"),
     ("kok dosyalardan (kimsenin import etmedigi):", "from root files (imported by none):"),
     ("Adim basina dosya:", "Files per step:"), ("baslangic yok (ne giris ne kok dosya).", "no starting point (neither entry nor root file)."),
 ]
@@ -219,6 +230,7 @@ def _accent(s):
 EN_NUM = [(re.compile(r"\b(\d+) dosya ciftinden azina dayanan"), r"resting on fewer than \1 file pairs"),
           (re.compile(r"\b(\d+) bag\b"), r"\1 edges"), (re.compile(r"\b(\d+) commit\b"), r"\1 commits"),
           (re.compile(r"\b(\d+) baslangic,"), r"\1 starting points,"),
+          (re.compile(r"\b(\d+) satir, (\d+) okunan dosya import ediyor"), r"\1 lines, imported by \2 read files"),
           (re.compile(r"\b(\d+) dosyaya ulasildi, en uzak (\d+) adim; ulasilmayan (\d+) dosya\."),
            r"\1 files reached, farthest \2 steps; \3 files not reached.")]
 
@@ -277,6 +289,8 @@ def self_test() -> int:
     except SystemExit as e:
         t("bilinmeyen dil durur (cikis 2), varsayilana dusmez", e.code == 2)
     t("leftover: Turkce kalan satiri sayar", leftover("satir var\n`satir`\nok") == 1 and leftover(en) <= 1)
+    t("cumle sonu kelimesi duzelir, dosya adi degismez",
+      cevir("buradan baslayin.", "tr") == "buradan başlayın." and cevir("bak satir.py", "tr").endswith("satir.py"))
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 

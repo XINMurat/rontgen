@@ -1,4 +1,4 @@
-> Kaynak: skill/rontgen/SKILL.md · sha256:3e29a2ff7ab8 — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
+> Kaynak: skill/rontgen/SKILL.md · sha256:e397d8da85b3 — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
 
 # Metodoloji — döngü
 
@@ -36,7 +36,7 @@ okuma yapıldığını ölçer.
 | `belge.py` | `belge.md` / `.json` | projenin belgelerinin andığı kod yolları: hangileri var, en çok hangisini belgeler anıyor, hangi modülleri hiçbiri anmıyor |
 | `paket.py` | `paket.md` / `.json` | paket bildirimleri (Cargo, npm, .NET, Python, Go, Maven, Gradle): iç, dış, özelliğe bağlı, yalnız test için |
 | `atif.py` | denetim / `--capala` / `--ornek` | her atfın hâlâ okunan şeyi gösterip göstermediği; ikinci okuyucu için kör bir kontrol listesi |
-| `kapsam.py` | `kapsam.md` / `.json` | belgelerin kodun ne kadarına dayandığı; okunacak sonraki dilim |
+| `kapsam.py` | `kapsam.md` / `.json` | belgelerin kodun ne kadarına dayandığı; okunacak sonraki dilim — çözümleyicisi olan dillerde (Lean, Go, Rust, Java/Kotlin) okumanın sınırı (okunan dosyaların import ettiği okunmamış dosyalar, `[K]`), diğerlerinde okunmamış ısı |
 | `devir.py` | iş listesi / kayıt | iskele'ye (kabul ölçütlü görevler, `review` taban çizgisi) ve mizan'a (tutmayan cümleler) devir |
 | `dogrula.py` | denetim | her JSON çıktısını `schemas/` içindeki dondurulmuş şemasına karşı |
 | `cikti.py` | svg / png / docx / tex / pdf | isteğe bağlı biçimler; `--yokla` bu makinenin hangilerini yapabildiğini söyler |

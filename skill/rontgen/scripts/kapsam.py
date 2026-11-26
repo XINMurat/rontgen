@@ -64,7 +64,9 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 import dil
-from ortak import uzun_yol  # noqa: E402
+from collections import Counter  # noqa: E402
+
+from ortak import list_files, uzun_yol  # noqa: E402
 
 READ_SHARE = 0.6
 ORNEK_HEAD = "# Kor denetim"   # first line of atif.py --ornek
@@ -174,6 +176,48 @@ def load_anchors(path: str):
     return out
 
 
+RESOLVERS = {".lean": ("lean_dili", "**/lakefile.*"), ".go": ("go_dili", "**/go.mod"), ".rs": ("rust_dili", "**/Cargo.toml"),
+             ".java": ("jvm_dili", None), ".kt": ("jvm_dili", None)}
+
+
+def frontier(repo, read: dict, sizes: dict, limit: int = 10):
+    """The edge of what was read: source files that a read file imports [K] and that nobody has read yet.
+
+    The heat ranking (commits x unread lines) sent a reading of a 175k-file Lean release, with no history, to
+    its largest folder; the next useful slice was four files the trunk imports. Ranked by how many read files
+    point at each, smaller first. Only languages with a resolver (Lean, Go, Rust, Java/Kotlin); None elsewhere."""
+    if not repo or not os.path.isdir(repo):
+        return None
+    groups = {}
+    for p in read:
+        spec = RESOLVERS.get(os.path.splitext(p)[1].lower())
+        if spec:
+            try:
+                with io.open(uzun_yol(os.path.join(repo, p)), encoding="utf-8", errors="replace") as fh:
+                    groups.setdefault(spec, {})[p] = fh.read()
+            except OSError:
+                pass
+    if not groups:
+        return None
+    known = set(list_files(repo)[0])
+    hits = Counter()
+    for (modname, pattern), files in groups.items():
+        mod = __import__(modname)
+        manifests = {}
+        for rel in (list_files(repo, pattern)[0] if pattern else []):
+            try:
+                with io.open(uzun_yol(os.path.join(repo, rel)), encoding="utf-8", errors="replace") as fh:
+                    manifests[rel] = fh.read()
+            except OSError:
+                pass
+        found = mod.edges(files, known, manifests)[0]
+        for a, b in found:
+            if b not in read and b in sizes:
+                hits[b] += 1
+    ranked = sorted(hits, key=lambda p: (-hits[p], sizes.get(p, 0), p))
+    return [{"path": p, "from": hits[p], "lines": sizes.get(p, 0)} for p in ranked[:limit]]
+
+
 def build(docs: str, repo=None):
     try:
         with io.open(os.path.join(docs, "rontgen.json"), encoding="utf-8") as f:
@@ -221,7 +265,8 @@ def build(docs: str, repo=None):
             "share": kesir(got / total) if total else 0.0, "anchored_lines": sum(len(v) for p, v in anchors.items() if p in src),
             "anchors_total": sum(len(v) for v in anchors.values()),
             "modules": dict(sorted(mods.items(), key=lambda x: -x[1]["lines"])), "hotspots": hot,
-            "next": [m for m, _ in todo[:3]], "module_notes": notes, "flows": flows,
+            "next": [m for m, _ in todo[:3]], "next_files": frontier(repo, read, sizes) if has_ranges else None,
+            "module_notes": notes, "flows": flows,
             "outside_read": {p: len(v) for p, v in sorted(outside.items(), key=lambda x: -len(x[1]))},
             "second_reader": second_reader(docs),
             # a cited line that no recorded range contains: cited without being read in context (or the range was not written)
@@ -277,8 +322,14 @@ def render(k: dict, repo_name: str) -> str:
           f"okunmadi {states.count('okunmadi')}" + (f", yalniz atifli {states.count('atifli')}" if not k["has_ranges"] else "") + ".",
           f"- Modul notu: {len(k['module_notes'])}" + (f" ({', '.join(k['module_notes'])})" if k["module_notes"] else "") + ".",
           f"- Akis belgesi: {len(k['flows'])}" + (f" ({', '.join(k['flows'])})" if k["flows"] else "") + ".", "",
-          "## Siradaki dilim", "",
-          "Okunmamis isiya gore (commit x okunmamis satir). Bir oturumda bir dilim; oturum bu defteri ve belgeleri okuyup devam eder.", ""]
+          "## Siradaki dilim", "", "Bir oturumda bir dilim; oturum bu defteri ve belgeleri okuyup devam eder.", ""]
+    nf = k.get("next_files")
+    if nf:
+        o += ["Okumanin sinirindan `[K]`: okunan dosyalarin import ettigi, henuz okunmamis dosyalar; once cok isaret edilen, "
+              "sonra kucuk olan. Zincir boyunca ilerlemek icin buradan baslayin.", ""]
+        o += [f"{i}. `{x['path']}` — {x['lines']} satir, {x['from']} okunan dosya import ediyor" for i, x in enumerate(nf, 1)]
+        o += [""]
+    o += ["Okunmamis isiya gore (commit x okunmamis satir) moduller:", ""]
     o += [f"{i}. `{m}` — {k['modules'][m]['lines'] - k['modules'][m]['read']} okunmamis satir"
           for i, m in enumerate(k["next"], 1)] or ["Butun moduller `okundu`."]
     return "\n".join(o) + "\n"
@@ -362,6 +413,17 @@ def self_test() -> int:
         check("eski olcum dosyasi reddedilir", build(docs)[1] != [])
     check("kucuk pay sifira yuvarlanmaz", kesir(561 / 17365664) > 0 and yuzde(561 / 17365664) == "%0.0032"
           and yuzde(0.5) == "%50.0" and kesir(0.5) == 0.5)
+    with tempfile.TemporaryDirectory() as d:
+        for rel, text in (("Main.lean", "import A\nimport B\n"), ("A.lean", "import C\n"), ("B.lean", "import C\n"),
+                          ("C.lean", "def c := 1\n" * 30), ("D.lean", "import A\n"), ("lakefile.toml", 'name = "t"\n')):
+            with io.open(os.path.join(d, rel), "w", encoding="utf-8") as fh:
+                fh.write(text)
+        sz = {"Main.lean": 2, "A.lean": 1, "B.lean": 1, "C.lean": 30, "D.lean": 1}
+        fr = frontier(d, {"Main.lean": {1, 2}}, sz)
+        check("sinir: okunanin import ettigi okunmamis dosyalar, kucuk once", [x["path"] for x in fr] == ["A.lean", "B.lean"])
+        fr2 = frontier(d, {"Main.lean": {1}, "A.lean": {1}, "B.lean": {1}}, sz)
+        check("sinir: iki okunan dosyanin isaret ettigi once; okunmus olan cikmaz", fr2 == [{"path": "C.lean", "from": 2, "lines": 30}])
+        check("sinir: cozumleyicisi olmayan dilde None (isi siralamasi kalir)", frontier(d, {"x.py": {1}}, {"x.py": 1}) is None)
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 

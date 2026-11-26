@@ -46,7 +46,7 @@ reading was actually done.
 | `belge.py` | `belge.md` / `.json` | code paths the project's documents name: which exist, which document names most, which modules none names |
 | `paket.py` | `paket.md` / `.json` | package manifests (Cargo, npm, .NET, Python, Go, Maven, Gradle): internal, external, feature-gated, test-only |
 | `atif.py` | check / `--capala` / `--ornek` | whether every citation still points at what was read; a blind checklist for a second reader |
-| `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read |
+| `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read — the edge of the reading (unread files that read files import, `[K]`) where a resolver exists (Lean, Go, Rust, Java/Kotlin), else unread heat |
 | `devir.py` | backlog / registry | hand-off to iskele (tasks with acceptance criteria, `review` baseline) and mizan (unheld sentences) |
 | `dogrula.py` | check | every JSON output against its frozen schema in `schemas/` |
 | `cikti.py` | svg / png / docx / tex / pdf | optional formats; `--yokla` says which this machine can make |
