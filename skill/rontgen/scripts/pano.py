@@ -65,9 +65,9 @@ def block_of(y: dict, mods: dict, per_row: int = 4, keep: int = 40) -> dict:
     for e in edges:
         weight[e["from"]] += e["files"]; weight[e["to"]] += e["files"]
     top = [m for m, _ in weight.most_common(TOP_BLOCK)]
-    inner = [e for e in edges if e["from"] in top and e["to"] in top and e["from"] != e["to"]]
-    biggest = max((e["files"] for e in inner), default=0)
-    inner = sorted((e for e in inner if e["files"] * 100 >= biggest), key=lambda e: -e["files"])[:keep]
+    every = sorted((e for e in edges if e["from"] in top and e["to"] in top and e["from"] != e["to"]), key=lambda e: -e["files"])
+    biggest = max((e["files"] for e in every), default=0)
+    inner = [e for e in every if e["files"] * 100 >= biggest][:keep]
     out = {m: [e["to"] for e in inner if e["from"] == m and e["tier"] == "K"] for m in top}
     state, back = {}, set()
 
@@ -95,7 +95,9 @@ def block_of(y: dict, mods: dict, per_row: int = 4, keep: int = 40) -> dict:
     return {"nodes": [{"m": m, "o": i, "row": i // per_row, "col": i % per_row, "g": group_of(m),
                        "lines": mods.get(m, {}).get("lines", 0)} for i, m in enumerate(order)],
             "per_row": per_row, "edges": [{"a": e["from"], "b": e["to"], "t": e["tier"], "n": e["files"]} for e in inner],
-            "dropped": len([e for e in edges if e["from"] in top and e["to"] in top]) - len(inner)}
+            # every link among the boxes, for the "show all" switch: the drawing is legible, the data is complete
+            "edges_all": [{"a": e["from"], "b": e["to"], "t": e["tier"], "n": e["files"]} for e in every],
+            "dropped": len(every) - len(inner)}
 
 
 GENERIC_ROOTS = {"lean", "src", "lib", "app", "code", "source", "repo", "project", "main", "packages"}
@@ -321,6 +323,9 @@ def self_test() -> int:
         check("belge var: sira, baslik, ilk paragraf, kapsam durumu",
               dc["read"] and dc["order"] == ["`src/A` cekirdek", "`src/B` api"] and dc["docs"][0]["title"] == "A modulu"
               and dc["docs"][0]["para"].startswith("Cekirdek") and dc["cov"]["modules"]["src/A"]["state"] == "kismen")
+    bk = data_of(y, None)["block"]
+    check("blok: tum baglar ayrica tasinir; gizlenen sayisi farka esit",
+          len(bk["edges_all"]) >= len(bk["edges"]) and bk["dropped"] == len(bk["edges_all"]) - len(bk["edges"]))
     check("giris derinligi tasinir; yoksa None (olculmedi)", data_of(dict(y, entry_depth=ed), None)["depth"] == ed and d["depth"] is None)
     r = {"hotspots": [{"path": "src/A/core/a.lean", "commits": 4, "lines": 900, "changed": 120, "people": 2}]}
     check("gecmis var: sicak noktalar tasinir", data_of(y, r)["hot"][0]["c"] == 4)

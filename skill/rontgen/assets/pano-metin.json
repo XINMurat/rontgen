@@ -72,7 +72,8 @@
   "docs": "Yazılmış belgeler",
   "docs_none": "Bu ölçümün yanında okuma yarısının belgeleri yok: kod ölçüldü ama okunmadı.",
   "docs_order": "Belgelerin önerdiği okuma sırası:",
-  "docs_share": "Belgelerin dayandığı kod payı:"
+  "docs_share": "Belgelerin dayandığı kod payı:",
+  "show_all": "Zayıf bağları da göster (şema kalabalıklaşır)"
  },
  "en": {
   "title": "Röntgen dashboard",
@@ -147,6 +148,7 @@
   "docs": "Written documents",
   "docs_none": "No reading-half documents sit beside this measurement: the code was measured, not read.",
   "docs_order": "Reading order the documents give:",
-  "docs_share": "Share of the code the documents rest on:"
+  "docs_share": "Share of the code the documents rest on:",
+  "show_all": "Show weak links too (the diagram gets crowded)"
  }
 }

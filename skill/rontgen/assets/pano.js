@@ -71,8 +71,9 @@ function docs() {
     d.append(b, f, p); parts.push(d); });
   box.replaceChildren(...parts);
 }
+let showAll = false;
 function block() {
-  const box = document.getElementById("block"), B = D.block;
+  const box = document.getElementById("block"), B0 = D.block, B = { ...B0, edges: showAll ? (B0.edges_all || B0.edges) : B0.edges };
   if (!B.nodes.length) { box.textContent = t("empty"); return; }
   // Boxes in reading order (cycles broken, then topological), B.per_row to a row, each row centred.
   // A link goes down to a later row, arcs over its own row, or, when it runs back, takes a lane on the right.
@@ -115,7 +116,8 @@ function block() {
     g.addEventListener("pointerenter", () => lines.forEach((p) => p.setAttribute("opacity", p._e.a === n.m || p._e.b === n.m ? .95 : .05)));
     g.addEventListener("pointermove", (ev) => tip(box, ev, [n.m, nf(n.lines) + " " + t("lines")]));
     g.addEventListener("pointerleave", () => { lines.forEach((p) => p.setAttribute("opacity", .55)); untip(box); }); });
-  const note = document.getElementById("block-note"); if (note) { note.hidden = !B.dropped; note.textContent = nf(B.dropped) + " " + t("dropped"); }
+  const note = document.getElementById("block-note"); if (note) { note.hidden = !B0.dropped || showAll; note.textContent = nf(B0.dropped) + " " + t("dropped"); }
+  const sw = document.getElementById("block-all"); if (sw) { sw.parentElement.hidden = !B0.dropped; sw.checked = showAll; }
 }
 function rows() { return D.modules.filter((m) => !sel || m.g === sel); }
 function scatter() {
@@ -206,6 +208,7 @@ function draw() {
   const more = document.getElementById("more"); more.hidden = !D.modules_cut; more.textContent = nf(D.modules_cut) + " " + t("more");
 }
 document.querySelectorAll(".sw button").forEach((b) => b.addEventListener("click", () => { L = b.dataset.lang; try { localStorage.setItem("rontgen-pano-lang", L); } catch (e) {} draw(); }));
+document.getElementById("block-all").addEventListener("change", (e) => { showAll = e.target.checked; block(); });
 document.getElementById("filter").addEventListener("change", (e) => { sel = e.target.value; scatter(); tree(); });
 let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { scatter(); tree(); matrix(); depth(); used(); }, 150); });
 draw();
