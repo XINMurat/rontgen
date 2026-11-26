@@ -46,11 +46,11 @@ reading was actually done.
 | `belge.py` | `belge.md` / `.json` | code paths the project's documents name: which exist, which document names most, which modules none names |
 | `paket.py` | `paket.md` / `.json` | package manifests (Cargo, npm, .NET, Python, Go, Maven, Gradle): internal, external, feature-gated, test-only |
 | `atif.py` | check / `--capala` / `--ornek` | whether every citation still points at what was read; a blind checklist for a second reader |
-| `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice to read — the edge of the reading (unread files that read files import, `[K]`) where a resolver exists (Lean, Go, Rust, Java/Kotlin), else unread heat |
+| `kapsam.py` | `kapsam.md` / `.json` | how much of the code the documents rest on; the next slice: unread files that read files import (`[K]`, where a resolver exists), else unread heat |
 | `devir.py` | backlog / registry | hand-off to iskele (tasks with acceptance criteria, `review` baseline) and mizan (unheld sentences) |
 | `dogrula.py` | check | every JSON output against its frozen schema in `schemas/` |
 | `cikti.py` | svg / png / docx / tex / pdf | optional formats; `--yokla` says which this machine can make |
-| `pano.py` | `pano.html` | one self-contained page (no network): block diagram, links in and out, lines by module, module matrix, depth from entry points, most-used files, hotspots, where to start reading (from structure, `[H]`) and, when the reading half was done, its documents and how much of each module they rest on; TR / EN switch, first view from `report_lang` (`--lang`); `--name` sets the project name shown, and no other part of the local path reaches the page |
+| `pano.py` | `pano.html` | one self-contained page (no network): block diagram, links in and out, lines by module, module matrix, depth from entry points, most-used files, hotspots, where to start reading (from structure, `[H]`) and, when the reading half was done, its documents and how much of each module they rest on; TR / EN switch, first view from `report_lang`; `--name` sets the name shown, no local path reaches the page |
 
 `ortak.py` and `sonda.py` hold what they share. Each script has a
 `--self-test`. Thresholds and exclusions come from `rontgen.config.json`
