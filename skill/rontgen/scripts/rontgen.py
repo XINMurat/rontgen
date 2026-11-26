@@ -65,7 +65,7 @@ from collections import Counter, defaultdict
 from itertools import combinations
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
-from ortak import excluded_lines, source_map, ext, git, has_history, is_test, load_config, read_sources, thresholds_line
+from ortak import uzun_yol, excluded_lines, source_map, ext, git, has_history, is_test, load_config, read_sources, thresholds_line
 import dil  # noqa: E402
 
 COUPLING_MAX_FILES = 30
@@ -147,7 +147,7 @@ def read_coverage(repo: str, reports) -> dict:
     out = {"reports": [], "files": {}, "errors": []}
     for rel in reports:
         try:
-            with io.open(os.path.join(repo, rel), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, rel)), encoding="utf-8", errors="replace") as f:
                 text = f.read()
         except OSError as e:
             out["errors"].append(f"{rel}: okunamadi ({e})")

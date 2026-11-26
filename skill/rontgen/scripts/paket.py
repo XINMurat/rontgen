@@ -43,7 +43,7 @@ import tomllib
 import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ortak import list_files  # noqa: E402
+from ortak import uzun_yol, list_files  # noqa: E402
 import dil  # noqa: E402
 
 KINDS = ("normal", "dev", "build", "peer", "optional")
@@ -209,7 +209,7 @@ def outside(repo: str, paths) -> dict:
         if not rel.lower().endswith(TEXT_EXT) or "node_modules/" in rel:
             continue
         try:
-            with io.open(os.path.join(repo, rel), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, rel)), encoding="utf-8", errors="replace") as f:
                 lines = f.read().splitlines()
         except OSError:
             continue
@@ -232,7 +232,7 @@ def collect(repo: str):
     for p in sorted(paths):
         eco, fn = parser_for(p)
         try:
-            with io.open(os.path.join(repo, p), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, p)), encoding="utf-8", errors="replace") as f:
                 name, deps, feats, members = fn(f.read())
         except (ValueError, ET.ParseError, tomllib.TOMLDecodeError, AttributeError, IndexError) as e:
             errors.append(f"{p}: okunamadi ({type(e).__name__})")

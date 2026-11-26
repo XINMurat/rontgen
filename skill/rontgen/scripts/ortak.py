@@ -133,8 +133,9 @@ def list_files(repo: str, pattern=None):
         skipped = {}
     else:
         paths, skipped = [], {}
-        for root, dirs, names in os.walk(repo):
-            rel = os.path.relpath(root, repo).replace("\\", "/")
+        base = LONG_PREFIX + os.path.abspath(repo) if os.name == "nt" else repo   # os.walk skips long dirs silently
+        for root, dirs, names in os.walk(base):
+            rel = os.path.relpath(root, base).replace("\\", "/")
             rel = "" if rel == "." else rel + "/"
             keep = []
             for d in sorted(dirs):
@@ -304,6 +305,18 @@ def exclusion(path: str, text, cfg: dict):
     return None
 
 
+def uzun_yol(path: str) -> str:
+    """Windows: a path past MAX_PATH (260) opens only with the extended-length prefix; elsewhere unchanged.
+    A Lean release with 244-character module paths lost 5,518 files to this."""
+    if os.name != "nt" or len(path) < 240:
+        return path
+    full = os.path.abspath(path)
+    return full if full.startswith(LONG_PREFIX) else LONG_PREFIX + full
+
+
+LONG_PREFIX = "\\\\?\\"
+
+
 def read_sources(repo: str, cfg: dict):
     """-> files{path: text}, excluded{reason: [paths]}, unclassified Counter(ext)."""
     files, unclassified = {}, Counter()
@@ -318,10 +331,10 @@ def read_sources(repo: str, cfg: dict):
             continue
         full = os.path.join(repo, p)
         try:
-            if os.path.getsize(full) > MAX_BYTES:
+            if os.path.getsize(uzun_yol(full)) > MAX_BYTES:
                 excluded.setdefault("2 MB'tan buyuk", []).append(p)
                 continue
-            with io.open(full, encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(full), encoding="utf-8", errors="replace") as f:
                 text = f.read()
         except OSError:
             excluded.setdefault("okunamadi", []).append(p)

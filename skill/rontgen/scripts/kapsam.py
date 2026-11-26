@@ -64,6 +64,7 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
 import dil
+from ortak import uzun_yol  # noqa: E402
 
 READ_SHARE = 0.6
 ORNEK_HEAD = "# Kor denetim"   # first line of atif.py --ornek
@@ -113,7 +114,7 @@ def module_of(path: str, depth: int) -> str:
 def file_lines(repo, rel: str):
     """Line count of a file in the repository, or None when there is no such file (or no repository)."""
     try:
-        with io.open(os.path.join(repo, rel), encoding="utf-8", errors="replace") as f:
+        with io.open(uzun_yol(os.path.join(repo, rel)), encoding="utf-8", errors="replace") as f:
             return sum(1 for _ in f)
     except (OSError, TypeError):
         return None

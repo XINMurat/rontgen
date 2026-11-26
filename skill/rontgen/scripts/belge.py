@@ -49,7 +49,7 @@ import tempfile
 from collections import Counter
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
-from ortak import NOT_SOURCE, list_files, load_config, matches, read_sources, source_map
+from ortak import uzun_yol, NOT_SOURCE, list_files, load_config, matches, read_sources, source_map
 import dil  # noqa: E402
 
 TICK = re.compile(r"`([^`\s]+)`")
@@ -104,7 +104,7 @@ def build(repo: str, cfg: dict) -> dict:
     skipped_docs = [p for p in paths if p.lower().endswith(".md") and matches(p, cfg.get("exclude_globs", []))]
     for doc in sorted(p for p in paths if p.lower().endswith(".md") and p not in skipped_docs):   # archived copies are not the map
         try:
-            with io.open(os.path.join(repo, doc), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, doc)), encoding="utf-8", errors="replace") as f:
                 lines = f.read().splitlines()
         except OSError:
             continue

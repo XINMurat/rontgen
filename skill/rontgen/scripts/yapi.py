@@ -52,7 +52,7 @@ import tempfile
 from collections import Counter, defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
-from ortak import EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
+from ortak import uzun_yol, EXTRA, cycles, entry_match, entry_order, excluded_lines, family_of, is_test, list_files, load_config, read_sources, thresholds_line
 import dil  # noqa: E402
 from sonda import kor_noktalar, load_probes, probe_ends
 import c_dili
@@ -137,7 +137,7 @@ def project_edges(repo: str, depth: int):
     out = set()
     for p in list_files(repo, "**/*.csproj")[0]:
         try:
-            with io.open(os.path.join(repo, p), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, p)), encoding="utf-8", errors="replace") as f:
                 refs = PROJECT_REF.findall(f.read())
         except OSError:
             continue
@@ -226,7 +226,7 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         out = {}
         for rel in list_files(repo, pattern)[0]:
             try:
-                with io.open(os.path.join(repo, rel), encoding="utf-8", errors="replace") as f:
+                with io.open(uzun_yol(os.path.join(repo, rel)), encoding="utf-8", errors="replace") as f:
                     out[rel] = f.read()
             except OSError:
                 pass

@@ -80,7 +80,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # runs under python -I too: siblings are found by path
-from ortak import has_git, list_files
+from ortak import uzun_yol, has_git, list_files
 
 NO_GIT = ("commit'siz capa: git yok. Capalar calisma agacindaki dosyaya bagli; dosyanin capadan sonra degisip "
           "degismedigi (DEGISTI / BAYAT) olculmedi, KAYIK onu yalniz capa metni kayinca yakalar.")
@@ -252,7 +252,7 @@ def classify(cites, rows, tracked):
 def read_lines(repo: str, path: str, cache: dict):
     if path not in cache:
         try:
-            with io.open(os.path.join(repo, path), encoding="utf-8", errors="replace") as f:
+            with io.open(uzun_yol(os.path.join(repo, path)), encoding="utf-8", errors="replace") as f:
                 cache[path] = f.read().splitlines()
         except OSError:
             cache[path] = None
