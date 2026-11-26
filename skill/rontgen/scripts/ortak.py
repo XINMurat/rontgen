@@ -443,6 +443,21 @@ def self_test() -> int:
           {"source": "main", "path": "z/src/bin/s.rs", "line": 9}]
     check("giris: sira once ikili hedef, sonra main, sonra config",
           [x["path"] for x in sorted(es, key=entry_order)] == ["z/src/bin/s.rs", "a/b.c", "a/z.rs"])
+    # A Lean release with 244-character paths lost 5,518 files to unreadable opens and ~3,200 to a silent walk.
+    import shutil
+    d = tempfile.mkdtemp()                       # TemporaryDirectory's own cleanup hits the same limit
+    try:
+        deep = "/".join(["k" * 40] * 6)                            # 6 x 41 = 246 characters below the temp dir
+        target = os.path.join(d, deep, "derin.py")
+        os.makedirs(uzun_yol(os.path.dirname(target)), exist_ok=True)
+        with io.open(uzun_yol(target), "w", encoding="utf-8") as f:
+            f.write("x = 1\n")
+        files, _, _ = read_sources(d, dict(DEFAULTS))
+        check("uzun yol: 260'i asan dosya gezilir ve okunur", len(target) > 260 and files.get(deep + "/derin.py") == "x = 1\n")
+        check("uzun yol: kisa yol degismez, Windows disinda onek yok",
+              uzun_yol("a/b") == "a/b" and (os.name == "nt" or uzun_yol("x" * 300) == "x" * 300))
+    finally:
+        shutil.rmtree(uzun_yol(os.path.abspath(d)) if os.name == "nt" else d, ignore_errors=True)
     print(f"\n{sum(ok)}/{len(ok)} gecti")
     return 0 if all(ok) else 1
 

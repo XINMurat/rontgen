@@ -92,6 +92,15 @@ def render(r: dict, max_edges: int, sources: dict, cfg: dict) -> str:
         o += ["## Lean guven envanteri `[H]`", "", "Cekirdegin kanit gormeden kabul ettigi yerler (kesin liste Lean'de `#print axioms`):", ""]
         table(["Tur", "Sayi", "Ornekler"], [(k, v["say"], ", ".join(f"`{x}`" for x in v["ornek"])) for k, v in gv.items()] or [("-", 0, "hic yok")])
         o += [""]
+    ed = r.get("entry_depth")
+    o += ["## Giris noktasindan derinlik `[K]`", ""]
+    if ed:
+        src = "giris dosyalarindan:" if ed["from"] == "giris" else "kok dosyalardan (kimsenin import etmedigi):"
+        o += [f"{ed['starts']} baslangic, {src} {ed['reached']} dosyaya ulasildi, en uzak {ed['max']} adim; "
+              f"ulasilmayan {ed['unreached']} dosya. Adim basina dosya: "
+              + ", ".join(f"{k}: {v}" for k, v in ed["hist"].items()), ""]
+    else:
+        o += ["**olculmedi**: baslangic yok (ne giris ne kok dosya).", ""]
     o += ["## En cok yaslanilan dosyalar `[H]`", ""]
     table(["Dosya", "Yaslanan dosya"], [(x["path"], x["used_by"]) for x in r["most_used_files"]] or [("-", "-")])
     e = r["entry"]

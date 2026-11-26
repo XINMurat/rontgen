@@ -99,6 +99,34 @@ def ranked(counter):   # most_common breaks ties by insertion, i.e. by hash orde
     return sorted(counter.items(), key=lambda x: (-x[1], x[0]))
 
 
+def entry_depth(hard, entries, source):
+    """How many [K] import steps each source file sits from an entry point.
+
+    Entries are the files that hold a recognised entry (main, a config entry function); a repository with none
+    starts from its roots, the files that import others and that nothing imports (a Lean release: Main.lean).
+    Unreached files are counted, never dropped: on a library they are the code no entry pulls in."""
+    out = defaultdict(set)
+    for a, b in hard:
+        out[a].add(b)
+    starts, kind = sorted(set(entries) & source), "giris"
+    if not starts:
+        imported = {b for _, b in hard}
+        starts, kind = sorted(p for p in out if p in source and p not in imported), "kok"
+    if not starts:
+        return None
+    dist, frontier = {p: 0 for p in starts}, list(starts)
+    while frontier:
+        nxt = []
+        for p in frontier:
+            for q in out.get(p, ()):
+                if q not in dist:
+                    dist[q] = dist[p] + 1; nxt.append(q)
+        frontier = nxt
+    hist = Counter(dist.values())
+    return {"from": kind, "starts": len(starts), "start_examples": starts[:10], "reached": len(dist),
+            "unreached": len(source - set(dist)), "max": max(hist), "hist": {str(k): hist[k] for k in sorted(hist)}}
+
+
 def module_of(path: str, depth: int) -> str:
     return "/".join(path.split("/")[:-1][:depth]) or "."
 
@@ -312,6 +340,8 @@ def build(repo: str, cfg: dict, top: int, probes=()) -> dict:
         "probes": probe_notes, "c": c_note, "rust": lang.get("rs"), "go": lang.get("go"), "java": lang.get("java"),
         "lean": lang.get("lean"), "ozel": lang.get("ozel"),
         "most_used_files": [{"path": p, "used_by": n} for p, n in ranked(file_in)[:top]],
+        "entry_depth": entry_depth(hard, mains + [x["path"] for x in entry_fns],
+                                   {p for p, (f, _) in files.items() if f not in ("sql", EXTRA)}),
         "entry": {"mains": sorted(mains), "functions": entry_fns, "missing": sorted(set(wanted) - found - {"main"}),
                   "route_count": sum(len(v) for v in routes.values()),
                   "route_test": sum(len(v) for k, v in routes.items() if is_test(k)),
@@ -341,6 +371,12 @@ def self_test() -> int:
     names = [(k, n) for _, _, k, n in outline_of("cs", cs, [])]
     check("iskelet: C# tip ve yontemler", names == [("class", "Odeme"), ("method", "Onayla"), ("method", "Say")])
     check("iskelet: 'if (' yontem sayilmaz", all(n != "if" for _, n in names))
+    ed = entry_depth({("m.py", "a.py"), ("a.py", "b.py"), ("b.py", "a.py")}, ["m.py"], {"m.py", "a.py", "b.py", "x.py"})
+    check("giris derinligi: girisden adim, dongu sonlanir, ulasilmayan sayilir",
+          ed["from"] == "giris" and ed["hist"] == {"0": 1, "1": 1, "2": 1} and ed["unreached"] == 1 and ed["max"] == 2)
+    check("giris derinligi: giris yoksa kokten (kimsenin import etmedigi)",
+          entry_depth({("Main.lean", "A.lean")}, [], {"Main.lean", "A.lean"})["start_examples"] == ["Main.lean"]
+          and entry_depth(set(), [], {"a.py"}) is None)
     check("iskelet: Go kaliplari", [n for *_, n in outline_of("go", "func Ana() {}\ntype Kayit struct {}\n", [])] == ["Ana", "Kayit"])
     check("iskelet: Rust kaliplari", [n for *_, n in outline_of("rs", "pub fn calis() {}\nstruct Veri;\n", [])] == ["calis", "Veri"])
     check("iskelet: Java sinifi", [n for *_, n in outline_of("java", "public class Servis {\n}\n", [])] == ["Servis"])

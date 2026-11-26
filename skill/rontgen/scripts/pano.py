@@ -31,6 +31,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import time
 from html import escape
 from collections import Counter
@@ -109,7 +110,76 @@ def project_name(path: str) -> str:
     return "/".join(parts[-2:]) if parts[-1].lower() in GENERIC_ROOTS and len(parts) > 1 else parts[-1]
 
 
-def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | None = None) -> dict:
+LIST_ITEM = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.+)$")
+
+
+def module_for(path: str, modules) -> str | None:
+    """The deepest measured module that holds this file."""
+    best = None
+    for m in modules:
+        if (path == m or path.startswith(m.rstrip("/") + "/") or m == ".") and (best is None or len(m) > len(best)):
+            best = m
+    return best
+
+
+def reading_order(y: dict, limit: int = 10) -> list:
+    """Where to start, from structure alone [H]: entry modules, then what many files lean on, then what
+    everything depends on, then the largest. Nobody read anything to make this list; the page says so."""
+    mods = y.get("modules", {})
+    fan = y.get("fan", {})
+    picked, out = set(), []
+
+    def add(m, why):
+        if m and m in mods and m not in picked and len(out) < limit:
+            picked.add(m); out.append({"m": m, "why": why})
+        elif m in picked:
+            x = next(x for x in out if x["m"] == m)
+            if why not in x["why"].split("+"):
+                x["why"] += "+" + why
+    ed = y.get("entry_depth") or {}
+    for p in ed.get("start_examples", [])[:3]:
+        add(module_for(p, mods), "giris" if ed.get("from") == "giris" else "kok")
+    for x in y.get("most_used_files", [])[:4]:
+        add(module_for(x["path"], mods), "kullanilan")
+    for m in sorted((m for m in mods if fan.get(m, {}).get("in_k", 0) > 0), key=lambda m: (-fan[m]["in_k"], m))[:3]:
+        add(m, "taban")
+    for m in list(mods)[:limit]:                                   # modules are already largest first
+        add(m, "buyuk")
+    outline = y.get("outline") or {}
+    for x in out:
+        x["files"] = [{"p": p, "lines": v.get("lines"), "marks": [[k["line"], k["kind"], k["name"]] for k in v.get("marks", [])[:40]]}
+                      for p, v in outline.items() if module_for(p, mods) == x["m"]][:3]
+    return out
+
+
+def documents(docs: str | None) -> dict:
+    """The reading half, when it was done: its documents in order and how much of each module they rest on."""
+    if not docs:
+        return {"read": False}
+    found, order = [], []
+    rs = os.path.join(docs, "okuma-sirasi.md")
+    if os.path.exists(rs):
+        with io.open(rs, encoding="utf-8", errors="replace") as f:
+            order = [m.group(1).strip() for m in (LIST_ITEM.match(ln) for ln in f) if m][:20]
+    md = os.path.join(docs, "moduller")
+    for name in sorted(os.listdir(md)) if os.path.isdir(md) else []:
+        if name.endswith(".md"):
+            with io.open(os.path.join(md, name), encoding="utf-8", errors="replace") as f:
+                text = f.read()
+            title = next((ln[2:].strip() for ln in text.splitlines() if ln.startswith("# ")), name[:-3])
+            para = next((b.strip() for b in text.split("\n\n") if b.strip() and not b.lstrip().startswith(("#", ">", "|", "```"))), "")
+            found.append({"f": "moduller/" + name, "title": title, "para": para[:400]})
+    cov = None
+    kp = os.path.join(docs, "kapsam.json")
+    if os.path.exists(kp):
+        with io.open(kp, encoding="utf-8") as f:
+            k = json.load(f)
+        cov = {"share": k.get("share"), "modules": {m: {"state": v["state"], "read": v["read"], "lines": v["lines"]}
+                                                   for m, v in k.get("modules", {}).items()}}
+    return {"read": bool(found or order or cov), "order": order, "docs": found, "cov": cov}
+
+
+def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | None = None, docs: str | None = None) -> dict:
     mods, fan = y.get("modules", {}), y.get("fan", {})
     rows = sorted(({"m": m, "g": group_of(m), "files": v.get("files", 0), "lines": v.get("lines", 0),
                     "fi": fan.get(m, {}).get("in_k", 0), "fo": fan.get(m, {}).get("out_k", 0)} for m, v in mods.items()),
@@ -135,6 +205,7 @@ def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | No
         "modules": rows[:MAX_MODULES], "modules_cut": max(0, len(rows) - MAX_MODULES),
         "block": block, "matrix": matrix,
         "used": [{"p": x["path"], "n": x["used_by"]} for x in y.get("most_used_files", [])[:15]],
+        "depth": y.get("entry_depth"), "order": reading_order(y), "reading": documents(docs),
         "langs": langs, "trust": {k: v["say"] for k, v in trust.items()} if trust is not None else None,
         "hot": hot,
     }
@@ -178,8 +249,9 @@ def static_body(d: dict, lang: str) -> str:
     return body.replace("<main>", f'<main><noscript><p class="muted">{note}</p></noscript>', 1)
 
 
-def html(y: dict, r: dict | None, lang: str, name: str | None = None, measured: str | None = None) -> str:
-    d = data_of(y, r, name, measured)
+def html(y: dict, r: dict | None, lang: str, name: str | None = None, measured: str | None = None,
+         docs: str | None = None) -> str:
+    d = data_of(y, r, name, measured, docs)
     return ("<!doctype html>\n" f'<html lang="{page_lang(lang)}"><head><meta charset="utf-8">'
             '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
             f"<title>Röntgen · {escape(d['repo'])}</title>"
@@ -227,6 +299,29 @@ def self_test() -> int:
           and {n["g"] for n in d["block"]["nodes"]} >= {"A", "B"} and len(d["block"]["edges"]) == 3)
     check("veri adi script etiketini kapatamaz", "x</script>" not in h and "x<\\/script>" in h)
     check("gecmis yok: sicak nokta None (olculmedi), sifir degil", d["hot"] is None)
+    ed = {"from": "kok", "starts": 1, "reached": 3, "unreached": 0, "max": 2, "hist": {"0": 1, "1": 1, "2": 1}}
+    yo = dict(y, entry_depth={"from": "giris", "start_examples": ["src/B/api/m.py"]},
+              outline={"src/A/core/big.py": {"lines": 900, "marks": [{"line": 3, "depth": 0, "kind": "class", "name": "Kayit"}]}})
+    ro = reading_order(yo)
+    check("okuma sirasi: giris modulu once, nedeniyle; iskelet modulune baglanir",
+          ro[0]["m"] == "src/B/api" and ro[0]["why"].startswith("giris") and "taban" not in ro[0]["why"]
+          and any(x["files"] and x["files"][0]["marks"][0][2] == "Kayit" for x in ro)
+          and len({x["m"] for x in ro}) == len(ro))
+    with tempfile.TemporaryDirectory() as dd:
+        check("belge yok: okunmadi; olcum klasoru belgesiz", documents(dd) == {"read": False, "order": [], "docs": [], "cov": None}
+              and documents(None) == {"read": False})
+        os.makedirs(os.path.join(dd, "moduller"))
+        with io.open(os.path.join(dd, "okuma-sirasi.md"), "w", encoding="utf-8") as f:
+            f.write("# Okuma sirasi\n\n1. `src/A` cekirdek\n- `src/B` api\n")
+        with io.open(os.path.join(dd, "moduller", "a.md"), "w", encoding="utf-8") as f:
+            f.write("# A modulu\n\n> not\n\nCekirdek kayitlari tutar `src/A/x.py:3`.\n")
+        with io.open(os.path.join(dd, "kapsam.json"), "w", encoding="utf-8") as f:
+            json.dump({"share": 0.02, "modules": {"src/A": {"lines": 100, "read": 40, "state": "kismen"}}}, f)
+        dc = documents(dd)
+        check("belge var: sira, baslik, ilk paragraf, kapsam durumu",
+              dc["read"] and dc["order"] == ["`src/A` cekirdek", "`src/B` api"] and dc["docs"][0]["title"] == "A modulu"
+              and dc["docs"][0]["para"].startswith("Cekirdek") and dc["cov"]["modules"]["src/A"]["state"] == "kismen")
+    check("giris derinligi tasinir; yoksa None (olculmedi)", data_of(dict(y, entry_depth=ed), None)["depth"] == ed and d["depth"] is None)
     r = {"hotspots": [{"path": "src/A/core/a.lean", "commits": 4, "lines": 900, "changed": 120, "people": 2}]}
     check("gecmis var: sicak noktalar tasinir", data_of(y, r)["hot"][0]["c"] == 4)
     check("Lean guven envanteri: bos sozluk 'bulunmadi', None degil", d["trust"] == {})
@@ -276,7 +371,7 @@ def main() -> int:
     out = a.out or os.path.join(a.docs, "pano.html")
     with io.open(out, "w", encoding="utf-8", newline="\n") as f:
         stamp = time.strftime("%Y-%m-%d", time.localtime(os.path.getmtime(os.path.join(a.docs, "yapi.json"))))
-        f.write(html(y, r, lang, a.name, stamp))
+        f.write(html(y, r, lang, a.name, stamp, a.docs))
     print(f"yazildi: {out} (ilk dil {page_lang(lang)}; TR/EN dugmesiyle degisir)")
     return 0
 

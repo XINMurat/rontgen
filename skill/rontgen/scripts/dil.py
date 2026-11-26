@@ -27,6 +27,7 @@ LANGS = ("tr-ascii", "tr", "en")
 
 # stem (as rendered) -> accented stem; matched at a word start, suffixes kept
 TR_STEMS = {
+    "baslangic": "başlangıç", "adim": "adım", "ulasil": "ulaşıl", "noktasindan": "noktasından", "etmedig": "etmediğ",
     "acilir": "açılır", "adlandir": "adlandır", "adres": "adres", "akis": "akış", "alarm": "alarm", "anil": "anıl",
     "anmadig": "anmadığ", "arac": "araç", "aralig": "aralığ", "arali": "aralı", "ariyor": "arıyor", "asagi": "aşağı",
     "asan": "aşan", "atif": "atıf", "ayni": "aynı", "ayri": "ayrı", "ayristir": "ayrıştır", "ayrim": "ayrım", "azina": "azına",
@@ -180,12 +181,15 @@ EN = [
     ("cizilmedi", "not drawn"), ("Kisi", "People"), ("Dil", "Language"), ("Modul", "Module"), ("dosya", "files"), ("satir", "lines"),
     ("kisi", "people"), ("tablo", "tables"), ("yok", "none"), ("olculmedi", "unmeasured"), ("tuttu", "held"),
     ("tutmadi", "did not hold"), ("satirdan cikmiyor", "says more than its line"), ("ve", "and"), ("ya da", "or"),
+    ("## Giris noktasindan derinlik", "## Depth from entry points"), ("giris dosyalarindan:", "from entry files:"),
+    ("kok dosyalardan (kimsenin import etmedigi):", "from root files (imported by none):"),
+    ("Adim basina dosya:", "Files per step:"), ("baslangic yok (ne giris ne kok dosya).", "no starting point (neither entry nor root file)."),
 ]
 _EN = sorted(EN, key=lambda kv: -len(kv[0]))
 _EN_RX = re.compile("|".join(r"(?<![\w`])" + re.escape(k) + r"(?![\w])" for k, _ in _EN))
 _EN_MAP = dict(EN)
 TURKISH_ONLY = re.compile(r"\b(satir|dosya|olculmedi|yalniz|degil|icin|ile|bag|baglari|okunan|yazan|kaynak|gore|daha|tanesi|cozulen|"
-                          r"modul|dongu|sayi|cikan|giren|tablo|uret\w*|sicak|kor|tuttu|okundu|yok)\b", re.I)
+                          r"modul|dongu|sayi|cikan|giren|tablo|uret\w*|sicak|kor|tuttu|okundu|yok|adim|ulasil\w*|baslangic)\b", re.I)
 
 
 def _outside_code(text, fn):
@@ -213,7 +217,10 @@ def _accent(s):
 
 
 EN_NUM = [(re.compile(r"\b(\d+) dosya ciftinden azina dayanan"), r"resting on fewer than \1 file pairs"),
-          (re.compile(r"\b(\d+) bag\b"), r"\1 edges"), (re.compile(r"\b(\d+) commit\b"), r"\1 commits")]
+          (re.compile(r"\b(\d+) bag\b"), r"\1 edges"), (re.compile(r"\b(\d+) commit\b"), r"\1 commits"),
+          (re.compile(r"\b(\d+) baslangic,"), r"\1 starting points,"),
+          (re.compile(r"\b(\d+) dosyaya ulasildi, en uzak (\d+) adim; ulasilmayan (\d+) dosya\."),
+           r"\1 files reached, farthest \2 steps; \3 files not reached.")]
 
 
 def _english(s):

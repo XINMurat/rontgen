@@ -91,6 +91,53 @@
     },
     "outline": {
       "type": "object"
+    },
+    "entry_depth": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "$comment": "0.6: giris noktalarindan [K] import adim sayisi; giris yoksa kokten. null: baslangic yok (olculmedi)",
+      "required": [
+        "from",
+        "starts",
+        "reached",
+        "unreached",
+        "max",
+        "hist"
+      ],
+      "properties": {
+        "from": {
+          "enum": [
+            "giris",
+            "kok"
+          ]
+        },
+        "starts": {
+          "type": "integer"
+        },
+        "start_examples": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reached": {
+          "type": "integer"
+        },
+        "unreached": {
+          "type": "integer"
+        },
+        "max": {
+          "type": "integer"
+        },
+        "hist": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer"
+          }
+        }
+      }
     }
   },
   "$comment": "Rontgen yapi.json — donduruldu 2026-11-14 (surum 0.5). Alan eklemek serbest; ad degistirmek ya da silmek sema surumu gerektirir."

@@ -11,6 +11,7 @@ description: "A Claude skill that maps an existing codebase and writes the docum
 
 [Repository](https://github.com/XINMurat/rontgen) ·
 [Quickstart](QUICKSTART.md) ·
+[**Examples**](ornekler.html) ·
 [İskele](https://github.com/XINMurat/Iskele) ·
 [Mizan](https://github.com/XINMurat/Mizan) ·
 [Kıyas](https://github.com/XINMurat/Kiyas) ·
@@ -102,6 +103,7 @@ Text in the repository that tells the reader what to do is quoted as data, never
 
 [Depo](https://github.com/XINMurat/rontgen) ·
 [Hızlı başlangıç](QUICKSTART.md) ·
+[**Örnekler**](ornekler.html#tr) ·
 [İskele](https://github.com/XINMurat/Iskele) ·
 [Mizan](https://github.com/XINMurat/Mizan) ·
 [Kıyas](https://github.com/XINMurat/Kiyas) ·

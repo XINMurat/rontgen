@@ -38,6 +38,36 @@ function legend() {
   box.replaceChildren(...groups.slice(0, 7).map((g, i) => { const s = document.createElement("span"); const c = document.createElement("i"); c.style.background = i < 6 ? `var(--c${i})` : "var(--c6)"; s.append(c, document.createTextNode(i < 6 ? g : "…")); return s; }));
   const f = document.getElementById("filter"); f.replaceChildren(new Option(t("all"), ""), ...groups.map((g) => new Option(g, g))); f.value = sel;
 }
+function order() {
+  const box = document.getElementById("order"), O = D.order || [], cov = (D.reading && D.reading.cov && D.reading.cov.modules) || {};
+  if (!O.length) { box.replaceChildren(); const li = document.createElement("li"); li.textContent = t("empty"); box.append(li); return; }
+  box.replaceChildren(...O.map((x) => {
+    const li = document.createElement("li"), b = document.createElement("b"); b.textContent = x.m; li.append(b);
+    x.why.split("+").forEach((w) => { const c = document.createElement("span"); c.className = "chip"; c.textContent = t("why_" + w); li.append(c); });
+    const st = cov[x.m]; const c = document.createElement("span");
+    c.className = "chip" + (st && st.state === "okundu" ? " ok" : st && st.state === "kismen" ? " part" : "");
+    c.textContent = st ? t("cov_" + st.state) : t("cov_none"); li.append(c);
+    if (x.files.length) {
+      const d = document.createElement("details"), s = document.createElement("summary"); s.textContent = t("outline"); d.append(s);
+      x.files.forEach((f) => { const p = document.createElement("div"); p.textContent = f.p + " · " + nf(f.lines) + " " + t("lines"); const ul = document.createElement("ul"); ul.className = "outl";
+        f.marks.forEach(([ln, k, n]) => { const li2 = document.createElement("li"); li2.textContent = ln + "  " + k + " " + n; ul.append(li2); }); d.append(p, ul); });
+      li.append(d);
+    }
+    return li;
+  }));
+}
+function docs() {
+  const box = document.getElementById("docs"), R = D.reading || {}, sub = document.getElementById("docs-sub");
+  if (!R.read) { sub.textContent = t("docs_none"); box.replaceChildren(); return; }
+  sub.textContent = R.cov && R.cov.share != null ? t("docs_share") + " " + (R.cov.share * 100).toLocaleString(L === "en" ? "en-US" : "tr-TR", { maximumFractionDigits: 1 }) + "%" : "";
+  const parts = [];
+  if (R.order.length) { const h = document.createElement("p"); h.textContent = t("docs_order"); const ol = document.createElement("ol"); ol.className = "order";
+    R.order.forEach((o) => { const li = document.createElement("li"); li.textContent = o; ol.append(li); }); parts.push(h, ol); }
+  R.docs.forEach((x) => { const d = document.createElement("div"); d.className = "doc"; const b = document.createElement("b"); b.textContent = x.title;
+    const f = document.createElement("span"); f.className = "chip"; f.textContent = x.f; const p = document.createElement("p"); p.className = "muted"; p.textContent = x.para;
+    d.append(b, f, p); parts.push(d); });
+  box.replaceChildren(...parts);
+}
 function block() {
   const box = document.getElementById("block"), B = D.block;
   if (!B.nodes.length) { box.textContent = t("empty"); return; }
@@ -132,6 +162,23 @@ function table(id, head, data) {
   const body = document.createElement("tbody"); data.forEach((r) => { const row = document.createElement("tr"); r.forEach((v, i) => { const td = document.createElement("td"); td.textContent = i ? (typeof v === "number" ? nf(v) : (v ?? "—")) : v; row.append(td); }); body.append(row); });
   tb.append(body); const w = document.createElement("div"); w.className = "tw"; w.append(tb); box.replaceChildren(w);
 }
+function depth() {
+  const box = document.getElementById("depth"), E = D.depth, sub = document.getElementById("depth-sub");
+  if (!E) { sub.textContent = ""; box.textContent = t("depth_none"); return; }
+  sub.textContent = nf(E.starts) + " " + t(E.from === "giris" ? "depth_from_entry" : "depth_from_root") + " · " + nf(E.reached) + " " + t("depth_reached")
+    + " · " + nf(E.unreached) + " " + t("depth_unreached");
+  const ks = Object.keys(E.hist).map(Number).sort((a, b) => a - b), mx = Math.max(...ks.map((k) => E.hist[k]));
+  const W = Math.max(box.clientWidth, 320), H = 240, m = { l: 52, r: 12, t: 12, b: 32 }, bw = (W - m.l - m.r) / ks.length;
+  const s = svgIn(box, W, H, t("depth"));
+  [0, .25, .5, .75, 1].forEach((f) => { const y = H - m.b - f * (H - m.t - m.b); el("line", { x1: m.l, x2: W - m.r, y1: y, y2: y, stroke: "var(--grid)" }, s);
+    const tx = el("text", { x: m.l - 6, y: y + 4, "text-anchor": "end" }, s); tx.textContent = nf(Math.round(mx * f)); });
+  const every = Math.max(1, Math.ceil(ks.length / Math.floor((W - m.l) / 28)));
+  ks.forEach((k, i) => { const v = E.hist[k], h = v / mx * (H - m.t - m.b), x = m.l + i * bw + bw * .1;
+    const r = el("rect", { x, y: H - m.b - h, width: Math.max(1, bw * .8), height: h, rx: Math.min(4, bw * .3), fill: "var(--c0)" }, s);
+    r.addEventListener("pointermove", (ev) => tip(box, ev, [t("step") + " " + k, nf(v) + " " + t("files")])); r.addEventListener("pointerleave", () => untip(box));
+    if (i % every === 0) { const tx = el("text", { x: x + bw * .4, y: H - m.b + 14, "text-anchor": "middle" }, s); tx.textContent = k; } });
+  const a = el("text", { x: W - m.r, y: H - 2, "text-anchor": "end" }, s); a.textContent = t("step") + " →";
+}
 function used() {
   const box = document.getElementById("used"), U = D.used; if (!U.length) { box.textContent = t("empty"); return; }
   const W = Math.max(box.clientWidth, 320), H = U.length * 28 + 8, ml = Math.min(W * .5, 260), mx = Math.max(...U.map((u) => u.n));
@@ -149,7 +196,7 @@ function trust() {
   table("trust", ["marker", "count"], ks.map((k) => [k, D.trust[k]]));
 }
 function draw() {
-  texts(); tiles(); legend(); block(); scatter(); tree(); matrix(); used(); trust();
+  texts(); tiles(); legend(); order(); docs(); block(); scatter(); tree(); matrix(); depth(); used(); trust();
   if (Object.keys(D.langs).length) table("langs", ["lang", "resolved", "external", "unresolved"], Object.entries(D.langs).map(([k, v]) => [k, v.K, v.dis, v.miss]));
   else document.getElementById("langs").textContent = t("langs_none");
   table("hot", ["file", "commits", "changed", "lines", "people"], D.hot && D.hot.map((h) => [h.p, h.c, h.ch, h.l, h.pp]));
@@ -157,6 +204,6 @@ function draw() {
 }
 document.querySelectorAll(".sw button").forEach((b) => b.addEventListener("click", () => { L = b.dataset.lang; try { localStorage.setItem("rontgen-pano-lang", L); } catch (e) {} draw(); }));
 document.getElementById("filter").addEventListener("change", (e) => { sel = e.target.value; scatter(); tree(); });
-let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { scatter(); tree(); matrix(); used(); }, 150); });
+let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => { scatter(); tree(); matrix(); depth(); used(); }, 150); });
 draw();
 })();

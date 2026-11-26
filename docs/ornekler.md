@@ -18,8 +18,9 @@ counts and module and file names, never source code, and each project keeps its 
 | helix | Rust | 296 files | [open →](ornekler/helix.html) |
 | esbuild | Go | 196 files | [open →](ornekler/esbuild.html) |
 
-The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis. It says nothing about
-whether the proof holds.
+The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis, and carries the first
+reading round: 561 lines along the trunk from `Main.lean`, three module notes (in Turkish), every sentence cited, a blind
+second reader held 11 of 12. It says nothing about whether the proof holds.
 
 The same output is made for any repository with `python scripts/pano.py --docs rontgen-out --repo .` after `yapi.py`
 (and `rontgen.py`, for hotspots). [Back to the overview](./)
@@ -39,8 +40,9 @@ modül ve dosya adları taşırlar, kaynak kod asla; her proje kendi lisansını
 | helix | Rust | 296 dosya | [aç →](ornekler/helix.html#tr) |
 | esbuild | Go | 196 dosya | [aç →](ornekler/esbuild.html#tr) |
 
-Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar. İspatın geçerli olup
-olmadığı hakkında bir şey söylemez.
+Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar ve ilk okuma turunu taşır:
+`Main.lean`'den inen gövde boyunca 561 satır, üç modül notu, her cümle atıflı, kör ikinci okuyucu 12'nin 11'ini doğruladı.
+İspatın geçerli olup olmadığı hakkında bir şey söylemez.
 
 Aynı çıktı her depo için, `yapi.py`'den (sıcak noktalar için `rontgen.py`'den de) sonra
 `python scripts/pano.py --docs rontgen-out --repo .` ile üretilir. [Genel bakışa dön](./#tr)
