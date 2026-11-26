@@ -50,6 +50,7 @@ reading was actually done.
 | `devir.py` | backlog / registry | hand-off to iskele (tasks with acceptance criteria, `review` baseline) and mizan (unheld sentences) |
 | `dogrula.py` | check | every JSON output against its frozen schema in `schemas/` |
 | `cikti.py` | svg / png / docx / tex / pdf | optional formats; `--yokla` says which this machine can make |
+| `pano.py` | `pano.html` | one self-contained page (no network): block diagram, links in and out, lines by module, module matrix, most-used files, hotspots; TR / EN switch, first view from `report_lang` |
 
 `ortak.py` and `sonda.py` hold what they share. Each script has a
 `--self-test`. Thresholds and exclusions come from `rontgen.config.json`

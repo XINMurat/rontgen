@@ -44,6 +44,7 @@ anyone, spends the reading where the counts point, and **says how much it actual
 | `sozluk.md` · `riskler.md` | the project's vocabulary as the code spells it · what a newcomer would trip over |
 | `kapsam.md` | how much of the code the documents rest on, and the next slice to read |
 | `oturum-gunlugu.md` | how the map was made: decisions, where the method fell short, doubts |
+| `pano.html` | the measurement on one page to point at: block diagram, links in and out, where the lines are, module matrix, most-used files, hotspots. One file, no network; a TR / EN switch, opening in the report language |
 
 Every factual sentence cites `path/file.ext:line`. A **second reader** — a fresh session that did not write the
 documents — checks a sample before delivery, with table cells weighted in; the counts go at the top of the reading
@@ -132,6 +133,7 @@ sayıların gösterdiği yere harcar ve **gerçekte ne kadar okuduğunu söyler*
 | `sozluk.md` · `riskler.md` | projenin kodda yazıldığı haliyle sözlüğü · yeni gelenin takılacağı yerler |
 | `kapsam.md` | belgelerin kodun ne kadarına dayandığı ve okunacak sıradaki dilim |
 | `oturum-gunlugu.md` | haritanın nasıl yapıldığı: kararlar, yöntemin yetmediği yerler, kuşkular |
+| `pano.html` | ölçümün üzerinde gezinilen tek sayfası: blok şeması, gelen/giden bağlar, satırların yeri, modül matrisi, en çok kullanılan dosyalar, sıcak noktalar. Tek dosya, ağ gerekmez; TR / EN düğmesi, rapor dilinde açılır |
 
 Her olgusal cümle `yol/dosya.uzanti:satir` gösterir. Teslimden önce bir **ikinci okuyucu** — belgeleri yazmamış taze bir
 oturum — tablo hücreleri de ağırlıklı olmak üzere bir örneklemi denetler; sayılar okuma sırasının başına yazılır.

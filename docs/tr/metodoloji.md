@@ -1,4 +1,4 @@
-> Kaynak: skill/rontgen/SKILL.md · sha256:f0dad34344de — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
+> Kaynak: skill/rontgen/SKILL.md · sha256:b0193209130f — bu sayfa o sürümün çevirisidir; kaynak İngilizce metindir.
 
 # Metodoloji — döngü
 
@@ -40,6 +40,7 @@ okuma yapıldığını ölçer.
 | `devir.py` | iş listesi / kayıt | iskele'ye (kabul ölçütlü görevler, `review` taban çizgisi) ve mizan'a (tutmayan cümleler) devir |
 | `dogrula.py` | denetim | her JSON çıktısını `schemas/` içindeki dondurulmuş şemasına karşı |
 | `cikti.py` | svg / png / docx / tex / pdf | isteğe bağlı biçimler; `--yokla` bu makinenin hangilerini yapabildiğini söyler |
+| `pano.py` | `pano.html` | ağ gerektirmeyen tek sayfa: blok şeması, gelen/giden bağlar, modüle göre satırlar, modül matrisi, en çok kullanılan dosyalar, sıcak noktalar; TR / EN düğmesi, ilk görünüm `report_lang`'den |
 
 `ortak.py` ve `sonda.py` ortak kullanılanı tutar. Her betiğin bir
 `--self-test`'i vardır. Eşikler ve dışlamalar `rontgen.config.json`'dan
