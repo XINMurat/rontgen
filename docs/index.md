@@ -62,9 +62,18 @@ Each comparison removed the repository's own architecture document from the copy
 On large repositories it covers markedly more of what the authors wrote about their own design, at equal accuracy.
 On a library small enough to read whole, it does not. It reads 1–2% of a large codebase — and its documents say so.
 
+**Scale, not coverage.** On the Lean 4 source of a claimed proof of the Riemann Hypothesis — 175,187 files, 17.5 million
+lines — the structure pass read every file and resolved every import (753,569 `[K]` edges, 0 unresolved) in about 17.5
+minutes. It took four runs: each printed a nonzero count of what it could not see, and each count led to one bug (two
+Windows long-path failures, one heuristic written for minified JavaScript). There was no architecture document to referee
+against, so this row is not in the table above, and it says nothing about the proof.
+[The case study →](https://xinmurat.github.io/case-study-lean.html)
+
 ### Languages and ecosystems
 
-Dependencies resolved (`[K]`): Python, TypeScript/JavaScript (relative imports), C#, C/C++, Rust, Go, Java/Kotlin, and
+Dependencies resolved (`[K]`): Python, TypeScript/JavaScript (relative imports), C#, C/C++, Rust, Go, Java/Kotlin,
+Lean 4 (`import` through the lakefile's source roots, plus a trust inventory of `sorry`, `axiom` and the other places the
+kernel takes something on faith), and
 **a language the project defines for itself**, described once in the config from the project's own spec.
 Manifests: Cargo, npm, .NET, Python, Go, Maven, Gradle — including feature-gated and test-only dependencies, local
 package feeds and absolute paths that tie the repository to others. Tables from SQL and from EF Core, SQLAlchemy,
@@ -142,9 +151,18 @@ Büyük depolarda yazarların kendi tasarımları hakkında yazdıklarının bel
 kapsar. Tamamı okunabilecek kadar küçük bir kütüphanede kapsamaz. Büyük bir kod tabanının %1–2'sini okur — ve belgeleri
 bunu söyler.
 
+**Kapsam değil, ölçek.** Riemann Hipotezi'nin iddia edilen bir ispatının Lean 4 kaynağında — 175.187 dosya, 17,5 milyon
+satır — yapı geçişi her dosyayı okudu ve her import'u çözdü (753.569 `[K]` bağ, çözülemeyen 0), yaklaşık 17,5 dakikada.
+Dört koşum sürdü: her biri göremediği şeyin sıfırdan büyük bir sayısını bastı, ve her sayı tek bir hataya götürdü (iki
+Windows uzun yol hatası, küçültülmüş JavaScript için yazılmış bir sezgi). Hakem olacak bir mimari belge yoktu; bu yüzden
+bu satır yukarıdaki tabloda değil, ve ispat hakkında hiçbir şey söylemez.
+[Vaka çalışması →](https://xinmurat.github.io/case-study-lean.html#tr)
+
 ### Diller ve ekosistemler
 
-Çözülen bağımlılıklar (`[K]`): Python, TypeScript/JavaScript (göreli import), C#, C/C++, Rust, Go, Java/Kotlin ve
+Çözülen bağımlılıklar (`[K]`): Python, TypeScript/JavaScript (göreli import), C#, C/C++, Rust, Go, Java/Kotlin,
+Lean 4 (lakefile'ın kaynak kökleri üzerinden `import`, artı `sorry`, `axiom` ve çekirdeğin bir şeyi kanıtsız kabul ettiği
+diğer yerlerin güven envanteri) ve
 **projenin kendi tanımladığı bir dil** (projenin kendi spesifikasyonundan bir kez config'te tarif edilir). Paket
 bildirimleri: Cargo, npm, .NET, Python, Go, Maven, Gradle — özelliğe bağlı ve yalnız teste ait bağımlılıklar, yerel paket
 kaynakları ve depoyu başka depolara bağlayan mutlak yollar dahil. SQL'den ve EF Core, SQLAlchemy, Django, TypeORM,
