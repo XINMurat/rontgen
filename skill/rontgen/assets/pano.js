@@ -3,6 +3,7 @@ const D = JSON.parse(document.getElementById("pano-data").textContent);
 const S = JSON.parse(document.getElementById("pano-strings").textContent);
 let L = document.documentElement.lang === "en" ? "en" : "tr";
 try { const s = localStorage.getItem("rontgen-pano-lang"); if (s === "tr" || s === "en") L = s; } catch (e) {}
+if (location.hash === "#tr" || location.hash === "#en") L = location.hash.slice(1);   // a link that names a language wins
 const t = (k) => S[L][k] || k;
 const nf = (n) => n == null ? "—" : Number(n).toLocaleString(L === "en" ? "en-US" : "tr-TR");
 const NS = "http://www.w3.org/2000/svg";
@@ -22,7 +23,7 @@ const svgIn = (box, w, h, label) => { box.querySelectorAll("svg").forEach((s) =>
 function texts() {
   document.documentElement.lang = L;
   document.getElementById("repo").textContent = D.repo;
-  document.getElementById("where").textContent = D.path + (D.measured ? " · " + t("measured") + " " + D.measured : "");
+  document.getElementById("where").textContent = D.measured ? t("measured") + " " + D.measured : "";
   document.title = "Röntgen · " + D.repo;
   document.querySelectorAll("[data-t]").forEach((n) => { n.textContent = t(n.dataset.t); });
   document.querySelectorAll(".sw button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lang === L)));

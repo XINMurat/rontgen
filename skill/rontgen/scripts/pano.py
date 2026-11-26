@@ -101,17 +101,12 @@ GENERIC_ROOTS = {"lean", "src", "lib", "app", "code", "source", "repo", "project
 
 
 def project_name(path: str) -> str:
-    """The folder that was measured, with its parent when the folder alone says nothing (`riemann-lean/lean`)."""
+    """The folder that was measured, with its parent when the folder alone says nothing (`riemann-lean/lean`).
+    No other part of the path reaches the page: a shared page must not carry the machine's folders."""
     parts = [x for x in str(path).replace("\\", "/").split("/") if x and not x.endswith(":")]
     if not parts:
         return "."
     return "/".join(parts[-2:]) if parts[-1].lower() in GENERIC_ROOTS and len(parts) > 1 else parts[-1]
-
-
-def short_path(path: str) -> str:
-    """Only the last two folders: a page that is shared must not carry the measuring machine's home or user name."""
-    parts = [x for x in str(path).replace("\\", "/").split("/") if x and not x.endswith(":")]
-    return ("…/" if len(parts) > 2 else "") + "/".join(parts[-2:]) if parts else "."
 
 
 def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | None = None) -> dict:
@@ -133,7 +128,7 @@ def data_of(y: dict, r: dict | None, name: str | None = None, measured: str | No
     hot = None if not r or r.get("hotspots") is None else [
         {"p": h["path"], "c": h.get("commits"), "l": h.get("lines"), "ch": h.get("changed"), "pp": h.get("people")} for h in r["hotspots"][:15]]
     return {
-        "repo": name or project_name(y.get("repo", "")), "path": short_path(y.get("repo", "")), "measured": measured,
+        "repo": name or project_name(y.get("repo", "")), "measured": measured,
         "summary": {"files": sum(x["files"] for x in rows), "lines": sum(x["lines"] for x in rows), "modules": len(rows),
                     "edges_k": y.get("edge_counts", {}).get("K", 0), "edges_h": y.get("edge_counts", {}).get("H", 0),
                     "cycles": len(y.get("cycles", [])), "excluded": sum(len(v) for v in y.get("excluded", {}).values())},
@@ -177,7 +172,7 @@ def static_body(d: dict, lang: str) -> str:
                                  ("cycles", "cycles"), ("excluded", "excluded")))
     body = body.replace('<div class="tiles" id="tiles"></div>', f'<div class="tiles" id="tiles">{tiles}</div>', 1)
     body = body.replace('<h1 id="repo"></h1>', f'<h1 id="repo">{escape(d["repo"])}</h1>', 1)
-    where = escape(d["path"]) + (f' · {escape(s["measured"])} {escape(d["measured"])}' if d.get("measured") else "")
+    where = f'{escape(s["measured"])} {escape(d["measured"])}' if d.get("measured") else ""
     body = body.replace('<span id="where"></span>', f'<span id="where">{where}</span>', 1)
     note = escape(STRINGS["tr"]["noscript"]) + " / " + escape(STRINGS["en"]["noscript"])
     return body.replace("<main>", f'<main><noscript><p class="muted">{note}</p></noscript>', 1)
@@ -219,8 +214,9 @@ def self_test() -> int:
           project_name("C:/x/riemann-lean/lean") == "riemann-lean/lean" and project_name("/a/helix") == "helix"
           and '<h1 id="repo">demo</h1>' in h and '<h1 id="repo">Benim</h1>' in html(y, None, "tr", "Benim", "2026-11-26")
           and "2026-11-26" in html(y, None, "tr", None, "2026-11-26"))
-    check("yerel yol sayfaya girmez: yalniz son iki klasor", short_path(r"C:\Users\ad\is\proje") == "…/is/proje"
-          and "Users" not in html(dict(y, repo="C:/Users/ad/is/proje"), None, "tr"))
+    yerel = html(dict(y, repo="C:/Users/ad/is/proje"), None, "tr")
+    check("yerel yol sayfaya girmez: yalniz proje adi",
+          "Users" not in yerel and "is/proje" not in yerel and '<h1 id="repo">proje</h1>' in yerel)
     check("betiksiz gorunum: baslik, ozet sayilari ve noscript notu HTML'de",
           '<p class="eyebrow" data-t="title">Röntgen panosu</p>' in h and "<b>7</b>" in h and "<noscript>" in h
           and 'data-t="title">Röntgen dashboard<' in html(y, None, "en"))

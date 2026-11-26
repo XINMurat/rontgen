@@ -70,6 +70,20 @@ Windows long-path failures, one heuristic written for minified JavaScript). Ther
 against, so this row is not in the table above, and it says nothing about the proof.
 [The case study →](https://xinmurat.github.io/case-study-lean.html)
 
+### See it on real code
+
+Each page below is one `pano.html` exactly as `pano.py` wrote it: one file, no network, a TR / EN switch. They carry
+counts and module and file names, never source code, and each project keeps its own licence.
+
+| Project | Language | Size | Page |
+|---|---|---|---|
+| riemann-lean | Lean 4 | 175,187 files, 17.5 million lines | [open →](ornekler/riemann-lean.html) |
+| helix | Rust | 296 files | [open →](ornekler/helix.html) |
+| esbuild | Go | 196 files | [open →](ornekler/esbuild.html) |
+
+The Lean page maps the structure of a release that claims a proof of the Riemann Hypothesis. It says nothing about
+whether the proof holds.
+
 ### Languages and ecosystems
 
 Dependencies resolved (`[K]`): Python, TypeScript/JavaScript (relative imports), C#, C/C++, Rust, Go, Java/Kotlin,
@@ -159,6 +173,20 @@ Dört koşum sürdü: her biri göremediği şeyin sıfırdan büyük bir sayıs
 Windows uzun yol hatası, küçültülmüş JavaScript için yazılmış bir sezgi). Hakem olacak bir mimari belge yoktu; bu yüzden
 bu satır yukarıdaki tabloda değil, ve ispat hakkında hiçbir şey söylemez.
 [Vaka çalışması →](https://xinmurat.github.io/case-study-lean.html#tr)
+
+### Gerçek kod üzerinde görün
+
+Aşağıdaki her sayfa, `pano.py`'nin yazdığı haliyle bir `pano.html`: tek dosya, ağ gerekmez, TR / EN düğmesi. Sayılar ve
+modül ve dosya adları taşırlar, kaynak kod asla; her proje kendi lisansını korur.
+
+| Proje | Dil | Boyut | Sayfa |
+|---|---|---|---|
+| riemann-lean | Lean 4 | 175.187 dosya, 17,5 milyon satır | [aç →](ornekler/riemann-lean.html#tr) |
+| helix | Rust | 296 dosya | [aç →](ornekler/helix.html#tr) |
+| esbuild | Go | 196 dosya | [aç →](ornekler/esbuild.html#tr) |
+
+Lean sayfası, Riemann Hipotezi'nin bir ispatını iddia eden bir yayının yapısını haritalar. İspatın geçerli olup
+olmadığı hakkında bir şey söylemez.
 
 ### Diller ve ekosistemler
 
